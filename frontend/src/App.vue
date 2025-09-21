@@ -19,3 +19,5 @@ onMounted(async () => {
 <style>
 body { margin: 0; }
 </style>
+
+<!-- ctrl + / - сделать комментарий-->
