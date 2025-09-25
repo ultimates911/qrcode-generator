@@ -9,7 +9,10 @@ import (
 )
 
 type Querier interface {
+	CreateLink(ctx context.Context, arg CreateLinkParams) (Link, error)
+	CreateQRCode(ctx context.Context, arg CreateQRCodeParams) (QrCode, error)
 	CreateUser(ctx context.Context, arg CreateUserParams) (User, error)
+	GetLinkByHash(ctx context.Context, hash string) (Link, error)
 	GetUserByEmail(ctx context.Context, email string) (User, error)
 }
 

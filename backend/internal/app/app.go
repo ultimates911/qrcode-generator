@@ -2,16 +2,18 @@ package app
 
 import (
 	"context"
-	"github.com/go-playground/validator/v10"
-	"github.com/gofiber/fiber/v2"
-	"github.com/rs/zerolog/log"
-	"go.uber.org/fx"
+
 	"qrcodegen/config"
 	"qrcodegen/internal/delivery"
 	"qrcodegen/internal/delivery/http"
 	"qrcodegen/internal/pkg/database"
 	"qrcodegen/internal/repository/postgres"
 	"qrcodegen/internal/usecase"
+
+	"github.com/go-playground/validator/v10"
+	"github.com/gofiber/fiber/v2"
+	"github.com/rs/zerolog/log"
+	"go.uber.org/fx"
 )
 
 func New() *fx.App {
@@ -24,8 +26,11 @@ func New() *fx.App {
 			postgres.NewRepository,
 
 			usecase.NewUserUseCase,
+			usecase.NewLinkUseCase,
 
 			http.NewUserHandler,
+			http.NewLinkHandler,
+
 			delivery.NewRouter,
 
 			validator.New,
