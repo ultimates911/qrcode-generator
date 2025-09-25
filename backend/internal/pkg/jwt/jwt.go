@@ -1,6 +1,7 @@
 package jwt
 
 import (
+	"strconv"
 	"time"
 
 	"qrcodegen/config"
@@ -14,49 +15,23 @@ type Claims struct {
 	jwt.RegisteredClaims
 }
 
-func Sign(user sqldb.User, cfg *config.Config) (string, int64, error) {
-	now := time.Now()
-	exp := now.Add(time.Duration(cfg.JWTTTLMinutes) * time.Minute)
+func Sign(user sqldb.User, cfg *config.Config) (string, time.Time, error) {
+	expirationTime := time.Now().Add(cfg.JWTTTL)
 
-	claims := Claims{
+	claims := &Claims{
 		Email: user.Email,
 		RegisteredClaims: jwt.RegisteredClaims{
-			Subject:   toString(user.ID),
-			IssuedAt:  jwt.NewNumericDate(now),
-			ExpiresAt: jwt.NewNumericDate(exp),
+			Subject:   strconv.FormatInt(user.ID, 10),
+			ExpiresAt: jwt.NewNumericDate(expirationTime),
+			IssuedAt:  jwt.NewNumericDate(time.Now()),
 		},
 	}
 
-	t := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
-	signed, err := t.SignedString([]byte(cfg.JWTSecret))
+	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
+	tokenString, err := token.SignedString([]byte(cfg.JWTSecret))
 	if err != nil {
-		return "", 0, err
+		return "", time.Time{}, err
 	}
-	return signed, int64(exp.Sub(now).Seconds()), nil
-}
 
-func toString(id int64) string {
-	return fmtInt(id)
-}
-
-func fmtInt(v int64) string {
-	b := [20]byte{}
-	i := len(b)
-	neg := v < 0
-	if neg {
-		v = -v
-	}
-	for {
-		i--
-		b[i] = byte('0' + v%10)
-		v /= 10
-		if v == 0 {
-			break
-		}
-	}
-	if neg {
-		i--
-		b[i] = '-'
-	}
-	return string(b[i:])
+	return tokenString, expirationTime, nil
 }
