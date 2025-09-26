@@ -4,12 +4,12 @@ import (
 	"bytes"
 	"fmt"
 	"image/png"
-	"math"
 	"regexp"
 	"strings"
 
 	"github.com/quickqr/gqr"
 	export "github.com/quickqr/gqr/export/image"
+	"github.com/quickqr/gqr/export/image/shapes"
 )
 
 func normalizeHex(s string) (string, error) {
@@ -23,35 +23,44 @@ func normalizeHex(s string) (string, error) {
 func GeneratePNG(url, colorHex, bgHex string, smoothing float64) ([]byte, error) {
 	fg, err := normalizeHex(colorHex)
 	if err != nil {
-		return nil, err
+		fg = "5EC8FF"
 	}
+
 	bg, err := normalizeHex(bgHex)
 	if err != nil {
-		return nil, err
+		bg = "FFFFFF"
 	}
 
-	gap := math.Max(0, math.Min(0.5, smoothing))
-
-	mat, err := gqr.NewWith(
+	qr, err := gqr.NewWith(
 		url,
-		gqr.WithErrorCorrectionLevel(gqr.ErrorCorrectionMedium),
+		gqr.WithErrorCorrectionLevel(gqr.ErrorCorrectionHighest),
 		gqr.WithEncodingMode(gqr.EncModeAuto),
 	)
 	if err != nil {
-		return nil, fmt.Errorf("create qr: %w", err)
+		return nil, fmt.Errorf("failed to create qr matrix: %w", err)
 	}
 
-	img := export.NewExporter(
-		export.WithFgColorHex("#"+fg),
-		export.WithBgColorHex("#"+bg),
+	exp := export.NewExporter(
 		export.WithImageSize(1024),
-		export.WithQuietZone(60),
-		export.WithModuleGap(gap),
-	).Export(*mat)
+		export.WithQuietZone(48),
+		export.WithModuleGap(0.14),
+		export.WithBgColorHex("#"+bg),
+
+		export.WithModuleShape(shapes.RoundedModuleShape(0.25, true)),
+		export.WithFinderShape(shapes.RoundedFinderShape(0.5)),
+
+		export.WithGradient(
+			export.GradientDirectionLTR,
+			export.ParseFromHex("#"+fg),
+			export.ParseFromHex("#"+fg),
+		),
+	)
+
+	img := exp.Export(*qr)
 
 	var buf bytes.Buffer
 	if err := png.Encode(&buf, img); err != nil {
-		return nil, fmt.Errorf("encode png: %w", err)
+		return nil, fmt.Errorf("failed to encode png: %w", err)
 	}
 	return buf.Bytes(), nil
 }
