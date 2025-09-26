@@ -12,13 +12,15 @@ import (
 type Router struct {
 	userHandler *http.UserHandler
 	linkHandler *http.LinkHandler
+	qrHandler   *http.QRHandler
 	cfg         *config.Config
 }
 
-func NewRouter(userHandler *http.UserHandler, linkHandler *http.LinkHandler, cfg *config.Config) *Router {
+func NewRouter(userHandler *http.UserHandler, linkHandler *http.LinkHandler, qrHandler *http.QRHandler, cfg *config.Config) *Router {
 	return &Router{
 		userHandler: userHandler,
 		linkHandler: linkHandler,
+		qrHandler:   qrHandler,
 		cfg:         cfg,
 	}
 }
@@ -33,6 +35,9 @@ func (r *Router) Register(app *fiber.App) {
 	apiV1.Post("/register", r.userHandler.Register)
 	apiV1.Post("/login", r.userHandler.Login)
 
-	links := apiV1.Group("/links", middleware.Auth(r.cfg))
+	authenticated := apiV1.Group("/", middleware.Auth(r.cfg))
+	authenticated.Post("/qrcode", r.qrHandler.Generate)
+
+	links := authenticated.Group("/links")
 	links.Post("/create", r.linkHandler.CreateLink)
 }

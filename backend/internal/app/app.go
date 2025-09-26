@@ -27,9 +27,11 @@ func New() *fx.App {
 
 			usecase.NewUserUseCase,
 			usecase.NewLinkUseCase,
+			usecase.NewQRUseCase,
 
 			http.NewUserHandler,
 			http.NewLinkHandler,
+			http.NewQRHandler,
 
 			delivery.NewRouter,
 
