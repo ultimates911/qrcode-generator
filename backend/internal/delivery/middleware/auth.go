@@ -9,7 +9,7 @@ import (
 
 func Auth(cfg *config.Config) fiber.Handler {
 	return func(c *fiber.Ctx) error {
-		tokenString := c.Cookies("jwt")
+		tokenString := c.Cookies("jwt_token")
 		if tokenString == "" {
 			return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{"error": "unauthorized"})
 		}
