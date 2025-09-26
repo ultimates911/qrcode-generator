@@ -64,7 +64,7 @@ func (h *UserHandler) Login(c *fiber.Ctx) error {
 	}
 
 	c.Cookie(&fiber.Cookie{
-		Name:     "jwt",
+		Name:     "jwt_token",
 		Value:    token,
 		Expires:  expirationTime,
 		HTTPOnly: true,
