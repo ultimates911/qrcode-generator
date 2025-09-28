@@ -7,6 +7,7 @@ package sqldb
 
 import (
 	"context"
+	"time"
 )
 
 const createLink = `-- name: CreateLink :one
@@ -70,6 +71,56 @@ func (q *Queries) CreateQRCode(ctx context.Context, arg CreateQRCodeParams) (QrC
 	err := row.Scan(
 		&i.ID,
 		&i.LinkID,
+		&i.Color,
+		&i.Background,
+		&i.Smoothing,
+	)
+	return i, err
+}
+
+const getLinkAndQRCodeByID = `-- name: GetLinkAndQRCodeByID :one
+SELECT
+    l.id,
+    l.original_url,
+    l.hash,
+    l.created_at,
+    l.updated_at,
+    qc.color,
+    qc.background,
+    qc.smoothing
+FROM
+    links l
+JOIN
+    qr_codes qc ON l.id = qc.link_id
+WHERE
+    l.id = $1 AND l.user_id = $2
+`
+
+type GetLinkAndQRCodeByIDParams struct {
+	ID     int64 `json:"id"`
+	UserID int64 `json:"user_id"`
+}
+
+type GetLinkAndQRCodeByIDRow struct {
+	ID          int64     `json:"id"`
+	OriginalUrl string    `json:"original_url"`
+	Hash        string    `json:"hash"`
+	CreatedAt   time.Time `json:"created_at"`
+	UpdatedAt   time.Time `json:"updated_at"`
+	Color       string    `json:"color"`
+	Background  string    `json:"background"`
+	Smoothing   *float64  `json:"smoothing"`
+}
+
+func (q *Queries) GetLinkAndQRCodeByID(ctx context.Context, arg GetLinkAndQRCodeByIDParams) (GetLinkAndQRCodeByIDRow, error) {
+	row := q.db.QueryRow(ctx, getLinkAndQRCodeByID, arg.ID, arg.UserID)
+	var i GetLinkAndQRCodeByIDRow
+	err := row.Scan(
+		&i.ID,
+		&i.OriginalUrl,
+		&i.Hash,
+		&i.CreatedAt,
+		&i.UpdatedAt,
 		&i.Color,
 		&i.Background,
 		&i.Smoothing,

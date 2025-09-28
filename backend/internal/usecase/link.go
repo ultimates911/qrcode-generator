@@ -20,7 +20,10 @@ const (
 	hashLength          = 7
 )
 
-var defaultQRSmoothing = 0.0
+var (
+	defaultQRSmoothing = 0.0
+	ErrLinkNotFound    = errors.New("link not found or access denied")
+)
 
 type LinkUseCase struct {
 	repo postgres.Repository
@@ -94,4 +97,31 @@ func (uc *LinkUseCase) CreateLink(ctx context.Context, req dto.CreateLinkRequest
 		ID:      createdLink.ID,
 		Message: "Link created successfully",
 	}, nil
+}
+
+func (uc *LinkUseCase) GetLinkByID(ctx context.Context, linkID int64, userID int64) (*dto.GetLinkResponse, error) {
+	params := sqldb.GetLinkAndQRCodeByIDParams{
+		ID:     linkID,
+		UserID: userID,
+	}
+	linkData, err := uc.repo.GetLinkAndQRCodeByID(ctx, params)
+	if err != nil {
+		if errors.Is(err, pgx.ErrNoRows) {
+			return nil, ErrLinkNotFound
+		}
+		return nil, fmt.Errorf("failed to get link by id: %w", err)
+	}
+
+	response := &dto.GetLinkResponse{
+		ID:          linkData.ID,
+		OriginalURL: linkData.OriginalUrl,
+		Hash:        linkData.Hash,
+		CreatedAt:   linkData.CreatedAt,
+		UpdatedAt:   linkData.UpdatedAt,
+		Color:       linkData.Color,
+		Background:  linkData.Background,
+		Smoothing:   linkData.Smoothing,
+	}
+
+	return response, nil
 }
