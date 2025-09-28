@@ -16,6 +16,8 @@ type Querier interface {
 	GetLinkByHash(ctx context.Context, hash string) (Link, error)
 	GetLinksByUserID(ctx context.Context, userID int64) ([]GetLinksByUserIDRow, error)
 	GetUserByEmail(ctx context.Context, email string) (User, error)
+	UpdateLinkURL(ctx context.Context, arg UpdateLinkURLParams) (int64, error)
+	UpdateQRCodeParams(ctx context.Context, arg UpdateQRCodeParamsParams) error
 }
 
 var _ Querier = (*Queries)(nil)

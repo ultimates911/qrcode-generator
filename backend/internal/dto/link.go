@@ -31,3 +31,15 @@ type GetLinkResponse struct {
 	Background  string    `json:"background"`
 	Smoothing   *float64  `json:"smoothing"`
 }
+
+type EditLinkRequest struct {
+	OriginalURL string  `json:"original_url" validate:"required,url"`
+	Color       string  `json:"color" validate:"required,hexadecimal,len=6"`
+	Background  string  `json:"background" validate:"required,hexadecimal,len=6"`
+	Smoothing   float64 `json:"smoothing" validate:"gte=0,lte=0.5"`
+}
+
+type EditLinkResponse struct {
+	Message string `json:"message"`
+	ID      int64  `json:"id"`
+}

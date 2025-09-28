@@ -151,3 +151,46 @@ func (uc *LinkUseCase) GetAllLinks(ctx context.Context, userID int64) (*dto.GetA
 		Message: "Success get all links by user",
 	}, nil
 }
+
+func (uc *LinkUseCase) EditLink(ctx context.Context, linkID int64, userID int64, req dto.EditLinkRequest) (*dto.EditLinkResponse, error) {
+	tx, err := uc.repo.BeginTx(ctx)
+	if err != nil {
+		return nil, fmt.Errorf("failed to begin transaction: %w", err)
+	}
+	defer tx.Rollback(ctx)
+
+	repoWithTx := uc.repo.WithTX(tx)
+
+	updateLinkParams := sqldb.UpdateLinkURLParams{
+		OriginalUrl: req.OriginalURL,
+		ID:          linkID,
+		UserID:      userID,
+	}
+	tag, err := repoWithTx.UpdateLinkURL(ctx, updateLinkParams)
+	if err != nil {
+		return nil, fmt.Errorf("failed to update link: %w", err)
+	}
+	if tag == 0 {
+		return nil, ErrLinkNotFound
+	}
+
+	updateQRParams := sqldb.UpdateQRCodeParamsParams{
+		Color:      req.Color,
+		Background: req.Background,
+		Smoothing:  &req.Smoothing,
+		LinkID:     linkID,
+	}
+	err = repoWithTx.UpdateQRCodeParams(ctx, updateQRParams)
+	if err != nil {
+		return nil, fmt.Errorf("failed to update qr code params: %w", err)
+	}
+
+	if err := tx.Commit(ctx); err != nil {
+		return nil, fmt.Errorf("failed to commit transaction: %w", err)
+	}
+
+	return &dto.EditLinkResponse{
+		Message: "Link updated successfully",
+		ID:      linkID,
+	}, nil
+}

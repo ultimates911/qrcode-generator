@@ -42,4 +42,5 @@ func (r *Router) Register(app *fiber.App) {
 	links.Post("/create", r.linkHandler.CreateLink)
 	links.Get("/", r.linkHandler.GetAllLinks)
 	links.Get("/:id<int>", r.linkHandler.GetLink)
+	links.Patch("/:id<int>", r.linkHandler.EditLink)
 }
