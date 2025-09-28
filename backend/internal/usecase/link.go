@@ -125,3 +125,29 @@ func (uc *LinkUseCase) GetLinkByID(ctx context.Context, linkID int64, userID int
 
 	return response, nil
 }
+
+func (uc *LinkUseCase) GetAllLinks(ctx context.Context, userID int64) (*dto.GetAllLinksResponse, error) {
+	links, err := uc.repo.GetLinksByUserID(ctx, userID)
+	if err != nil {
+		if errors.Is(err, pgx.ErrNoRows) {
+			return &dto.GetAllLinksResponse{
+				Links:   []dto.LinkInfo{},
+				Message: "Success get all links by user",
+			}, nil
+		}
+		return nil, fmt.Errorf("failed to get links by user id: %w", err)
+	}
+
+	linkInfos := make([]dto.LinkInfo, len(links))
+	for i, link := range links {
+		linkInfos[i] = dto.LinkInfo{
+			ID:          link.ID,
+			OriginalURL: link.OriginalUrl,
+		}
+	}
+
+	return &dto.GetAllLinksResponse{
+		Links:   linkInfos,
+		Message: "Success get all links by user",
+	}, nil
+}

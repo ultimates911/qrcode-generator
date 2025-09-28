@@ -146,3 +146,33 @@ func (q *Queries) GetLinkByHash(ctx context.Context, hash string) (Link, error) 
 	)
 	return i, err
 }
+
+const getLinksByUserID = `-- name: GetLinksByUserID :many
+SELECT id, original_url FROM links
+WHERE user_id = $1
+`
+
+type GetLinksByUserIDRow struct {
+	ID          int64  `json:"id"`
+	OriginalUrl string `json:"original_url"`
+}
+
+func (q *Queries) GetLinksByUserID(ctx context.Context, userID int64) ([]GetLinksByUserIDRow, error) {
+	rows, err := q.db.Query(ctx, getLinksByUserID, userID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []GetLinksByUserIDRow
+	for rows.Next() {
+		var i GetLinksByUserIDRow
+		if err := rows.Scan(&i.ID, &i.OriginalUrl); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
