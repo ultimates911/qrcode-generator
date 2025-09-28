@@ -51,3 +51,24 @@ func (h *LinkHandler) CreateLink(c *fiber.Ctx) error {
 
 	return c.Status(fiber.StatusCreated).JSON(resp)
 }
+
+func (h *LinkHandler) GetAllLinks(c *fiber.Ctx) error {
+	userIDStr, ok := c.Locals("userID").(string)
+	if !ok {
+		return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{"error": "Unauthorized"})
+	}
+
+	userID, err := strconv.ParseInt(userIDStr, 10, 64)
+	if err != nil {
+		c.Locals("logError", err)
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": "Internal server error"})
+	}
+
+	resp, err := h.linkUseCase.GetAllLinks(c.Context(), userID)
+	if err != nil {
+		c.Locals("logError", err)
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": "Internal server error"})
+	}
+
+	return c.Status(fiber.StatusOK).JSON(resp)
+}

@@ -12,6 +12,10 @@ RETURNING id, original_url, hash, created_at, updated_at, user_id;
 SELECT id, original_url, hash, created_at, updated_at, user_id FROM links
 WHERE hash = $1 LIMIT 1;
 
+-- name: GetLinksByUserID :many
+SELECT id, original_url FROM links
+WHERE user_id = $1;
+
 -- name: CreateQRCode :one
 INSERT INTO qr_codes (
   link_id,
