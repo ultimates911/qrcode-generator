@@ -41,4 +41,5 @@ func (r *Router) Register(app *fiber.App) {
 	links := authenticated.Group("/links")
 	links.Post("/create", r.linkHandler.CreateLink)
 	links.Get("/", r.linkHandler.GetAllLinks)
+	links.Get("/:id<int>", r.linkHandler.GetLink)
 }

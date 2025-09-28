@@ -26,3 +26,20 @@ INSERT INTO qr_codes (
   $1, $2, $3, $4
 )
 RETURNING *;
+
+-- name: GetLinkAndQRCodeByID :one
+SELECT
+    l.id,
+    l.original_url,
+    l.hash,
+    l.created_at,
+    l.updated_at,
+    qc.color,
+    qc.background,
+    qc.smoothing
+FROM
+    links l
+JOIN
+    qr_codes qc ON l.id = qc.link_id
+WHERE
+    l.id = $1 AND l.user_id = $2;
