@@ -13,6 +13,7 @@ type Querier interface {
 	CreateQRCode(ctx context.Context, arg CreateQRCodeParams) (QrCode, error)
 	CreateUser(ctx context.Context, arg CreateUserParams) (User, error)
 	GetLinkByHash(ctx context.Context, hash string) (Link, error)
+	GetLinksByUserID(ctx context.Context, userID int64) ([]GetLinksByUserIDRow, error)
 	GetUserByEmail(ctx context.Context, email string) (User, error)
 }
 
