@@ -43,3 +43,20 @@ JOIN
     qr_codes qc ON l.id = qc.link_id
 WHERE
     l.id = $1 AND l.user_id = $2;
+
+-- name: UpdateLinkURL :execrows
+UPDATE links
+SET
+    original_url = $1,
+    updated_at = now()
+WHERE
+    id = $2 AND user_id = $3;
+
+-- name: UpdateQRCodeParams :exec
+UPDATE qr_codes
+SET
+    color = $1,
+    background = $2,
+    smoothing = $3
+WHERE
+    link_id = $4;

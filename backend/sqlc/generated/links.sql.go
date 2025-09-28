@@ -176,3 +176,53 @@ func (q *Queries) GetLinksByUserID(ctx context.Context, userID int64) ([]GetLink
 	}
 	return items, nil
 }
+
+const updateLinkURL = `-- name: UpdateLinkURL :execrows
+UPDATE links
+SET
+    original_url = $1,
+    updated_at = now()
+WHERE
+    id = $2 AND user_id = $3
+`
+
+type UpdateLinkURLParams struct {
+	OriginalUrl string `json:"original_url"`
+	ID          int64  `json:"id"`
+	UserID      int64  `json:"user_id"`
+}
+
+func (q *Queries) UpdateLinkURL(ctx context.Context, arg UpdateLinkURLParams) (int64, error) {
+	result, err := q.db.Exec(ctx, updateLinkURL, arg.OriginalUrl, arg.ID, arg.UserID)
+	if err != nil {
+		return 0, err
+	}
+	return result.RowsAffected(), nil
+}
+
+const updateQRCodeParams = `-- name: UpdateQRCodeParams :exec
+UPDATE qr_codes
+SET
+    color = $1,
+    background = $2,
+    smoothing = $3
+WHERE
+    link_id = $4
+`
+
+type UpdateQRCodeParamsParams struct {
+	Color      string   `json:"color"`
+	Background string   `json:"background"`
+	Smoothing  *float64 `json:"smoothing"`
+	LinkID     int64    `json:"link_id"`
+}
+
+func (q *Queries) UpdateQRCodeParams(ctx context.Context, arg UpdateQRCodeParamsParams) error {
+	_, err := q.db.Exec(ctx, updateQRCodeParams,
+		arg.Color,
+		arg.Background,
+		arg.Smoothing,
+		arg.LinkID,
+	)
+	return err
+}
