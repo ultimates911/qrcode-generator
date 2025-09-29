@@ -165,3 +165,27 @@ func (h *LinkHandler) Redirect(c *fiber.Ctx) error {
 
 	return c.Redirect(originalURL, fiber.StatusFound)
 }
+
+func (h *LinkHandler) GetTransitionsByLink(c *fiber.Ctx) error {
+	linkID, err := c.ParamsInt("id")
+	if err != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "Invalid link ID"})
+	}
+	userIDStr, ok := c.Locals("userID").(string)
+	if !ok {
+		return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{"error": "Unauthorized"})
+	}
+	userID, err := strconv.ParseInt(userIDStr, 10, 64)
+	if err != nil {
+		c.Locals("logError", err)
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": "Internal server error"})
+	}
+
+	resp, err := h.linkUseCase.GetTransitions(c.Context(), int64(linkID), userID)
+	if err != nil {
+		c.Locals("logError", err)
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": "Internal server error"})
+	}
+
+	return c.Status(fiber.StatusOK).JSON(resp)
+}

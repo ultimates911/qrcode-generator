@@ -214,6 +214,67 @@ func (q *Queries) GetLinksByUserID(ctx context.Context, userID int64) ([]GetLink
 	return items, nil
 }
 
+const getTransitionsByLinkID = `-- name: GetTransitionsByLinkID :many
+SELECT
+  t.id,
+  t.country,
+  t.city,
+  t.referer,
+  t.user_agent,
+  t.browser,
+  t.os,
+  t.created_at
+FROM transitions t
+JOIN links l ON l.id = t.link_id
+WHERE t.link_id = $1 AND l.user_id = $2
+ORDER BY t.created_at DESC
+`
+
+type GetTransitionsByLinkIDParams struct {
+	LinkID int64 `json:"link_id"`
+	UserID int64 `json:"user_id"`
+}
+
+type GetTransitionsByLinkIDRow struct {
+	ID        int64     `json:"id"`
+	Country   *string   `json:"country"`
+	City      *string   `json:"city"`
+	Referer   *string   `json:"referer"`
+	UserAgent *string   `json:"user_agent"`
+	Browser   *string   `json:"browser"`
+	Os        *string   `json:"os"`
+	CreatedAt time.Time `json:"created_at"`
+}
+
+func (q *Queries) GetTransitionsByLinkID(ctx context.Context, arg GetTransitionsByLinkIDParams) ([]GetTransitionsByLinkIDRow, error) {
+	rows, err := q.db.Query(ctx, getTransitionsByLinkID, arg.LinkID, arg.UserID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []GetTransitionsByLinkIDRow
+	for rows.Next() {
+		var i GetTransitionsByLinkIDRow
+		if err := rows.Scan(
+			&i.ID,
+			&i.Country,
+			&i.City,
+			&i.Referer,
+			&i.UserAgent,
+			&i.Browser,
+			&i.Os,
+			&i.CreatedAt,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
 const updateLinkURL = `-- name: UpdateLinkURL :execrows
 UPDATE links
 SET

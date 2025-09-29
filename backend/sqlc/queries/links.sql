@@ -73,3 +73,18 @@ INSERT INTO transitions (
 ) VALUES (
   $1, $2, $3, $4, $5, $6, $7
 );
+
+-- name: GetTransitionsByLinkID :many
+SELECT
+  t.id,
+  t.country,
+  t.city,
+  t.referer,
+  t.user_agent,
+  t.browser,
+  t.os,
+  t.created_at
+FROM transitions t
+JOIN links l ON l.id = t.link_id
+WHERE t.link_id = $1 AND l.user_id = $2
+ORDER BY t.created_at DESC;
