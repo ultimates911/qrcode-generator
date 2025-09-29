@@ -2,11 +2,13 @@ package qrcode
 
 import (
 	"bytes"
+	"encoding/base64"
 	"fmt"
 	"image/png"
 	"regexp"
 	"strings"
 
+	"github.com/jung-kurt/gofpdf"
 	"github.com/quickqr/gqr"
 	export "github.com/quickqr/gqr/export/image"
 	"github.com/quickqr/gqr/export/image/shapes"
@@ -63,4 +65,40 @@ func GeneratePNG(url, colorHex, bgHex string, smoothing float64) ([]byte, error)
 		return nil, fmt.Errorf("failed to encode png: %w", err)
 	}
 	return buf.Bytes(), nil
+}
+
+func GenerateSVG(url, colorHex, bgHex string, smoothing float64) ([]byte, error) {
+	png, err := GeneratePNG(url, colorHex, bgHex, smoothing)
+	if err != nil {
+		return nil, err
+	}
+	b64 := base64.StdEncoding.EncodeToString(png)
+	svg := fmt.Sprintf(
+		`<svg xmlns="http://www.w3.org/2000/svg" width="1024" height="1024" viewBox="0 0 1024 1024"><image width="1024" height="1024" href="data:image/png;base64,%s"/></svg>`,
+		b64,
+	)
+	return []byte(svg), nil
+}
+
+func GeneratePDF(url, colorHex, bgHex string, smoothing float64) ([]byte, error) {
+	png, err := GeneratePNG(url, colorHex, bgHex, smoothing)
+	if err != nil {
+		return nil, err
+	}
+
+	pdf := gofpdf.NewCustom(&gofpdf.InitType{
+		UnitStr: "mm",
+		Size:    gofpdf.SizeType{Wd: 270, Ht: 270},
+	})
+	pdf.AddPage()
+
+	opt := gofpdf.ImageOptions{ImageType: "PNG", ReadDpi: true}
+	pdf.RegisterImageOptionsReader("qr", opt, bytes.NewReader(png))
+	pdf.ImageOptions("qr", 0, 0, 270, 270, false, opt, 0, "")
+
+	var out bytes.Buffer
+	if err := pdf.Output(&out); err != nil {
+		return nil, err
+	}
+	return out.Bytes(), nil
 }
