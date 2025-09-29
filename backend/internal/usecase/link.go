@@ -207,7 +207,6 @@ func (uc *LinkUseCase) EditLink(ctx context.Context, linkID int64, userID int64,
 }
 
 func (uc *LinkUseCase) Redirect(ctx context.Context, hash, referer, userAgent, ip string) (string, error) {
-	
 	link, err := uc.repo.GetLinkByHash(ctx, hash)
 	if err != nil {
 		if errors.Is(err, pgx.ErrNoRows) {
@@ -269,4 +268,44 @@ func (uc *LinkUseCase) createTransition(ctx context.Context, linkID int64, refer
 	if err != nil {
 		log.Error().Err(err).Msg("Failed to create transition")
 	}
+}
+
+func (uc *LinkUseCase) GetTransitions(ctx context.Context, linkID, userID int64) (*dto.GetTransitionsResponse, error) {
+	type row = struct {
+		ID        int64
+		Country   *string
+		City      *string
+		Referer   *string
+		UserAgent *string
+		Browser   *string
+		Os        *string
+		CreatedAt time.Time
+	}
+
+	rows, err := uc.repo.GetTransitionsByLinkID(
+		ctx,
+		sqldb.GetTransitionsByLinkIDParams{
+			LinkID: linkID,
+			UserID: userID,
+		},
+	)
+	if err != nil {
+		return nil, fmt.Errorf("failed to get transitions: %w", err)
+	}
+
+	items := make([]dto.TransitionItem, 0, len(rows))
+	for _, r := range rows {
+		items = append(items, dto.TransitionItem{
+			ID:        r.ID,
+			Country:   r.Country,
+			City:      r.City,
+			Referer:   r.Referer,
+			UserAgent: r.UserAgent,
+			Browser:   r.Browser,
+			OS:        r.Os,
+			CreatedAt: r.CreatedAt,
+		})
+	}
+
+	return &dto.GetTransitionsResponse{Transitions: items}, nil
 }

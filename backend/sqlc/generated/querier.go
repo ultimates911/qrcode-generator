@@ -16,6 +16,7 @@ type Querier interface {
 	GetLinkAndQRCodeByID(ctx context.Context, arg GetLinkAndQRCodeByIDParams) (GetLinkAndQRCodeByIDRow, error)
 	GetLinkByHash(ctx context.Context, hash string) (Link, error)
 	GetLinksByUserID(ctx context.Context, userID int64) ([]GetLinksByUserIDRow, error)
+	GetTransitionsByLinkID(ctx context.Context, arg GetTransitionsByLinkIDParams) ([]GetTransitionsByLinkIDRow, error)
 	GetUserByEmail(ctx context.Context, email string) (User, error)
 	UpdateLinkURL(ctx context.Context, arg UpdateLinkURLParams) (int64, error)
 	UpdateQRCodeParams(ctx context.Context, arg UpdateQRCodeParamsParams) error

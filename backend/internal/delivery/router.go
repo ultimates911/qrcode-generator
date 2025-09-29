@@ -46,4 +46,5 @@ func (r *Router) Register(app *fiber.App) {
 	links.Get("/:id<int>", r.linkHandler.GetLink)
 	links.Patch("/:id<int>", r.linkHandler.EditLink)
 	links.Get("/:id<int>/download", r.linkHandler.DownloadQR)
+	links.Get("/:id<int>/transitions", r.linkHandler.GetTransitionsByLink)
 }
