@@ -11,6 +11,7 @@ import (
 type Querier interface {
 	CreateLink(ctx context.Context, arg CreateLinkParams) (Link, error)
 	CreateQRCode(ctx context.Context, arg CreateQRCodeParams) (QrCode, error)
+	CreateTransition(ctx context.Context, arg CreateTransitionParams) error
 	CreateUser(ctx context.Context, arg CreateUserParams) (User, error)
 	GetLinkAndQRCodeByID(ctx context.Context, arg GetLinkAndQRCodeByIDParams) (GetLinkAndQRCodeByIDRow, error)
 	GetLinkByHash(ctx context.Context, hash string) (Link, error)

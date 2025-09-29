@@ -60,3 +60,16 @@ SET
     smoothing = $3
 WHERE
     link_id = $4;
+
+-- name: CreateTransition :exec
+INSERT INTO transitions (
+  link_id,
+  country,
+  city,
+  referer,
+  user_agent,
+  browser,
+  os
+) VALUES (
+  $1, $2, $3, $4, $5, $6, $7
+);

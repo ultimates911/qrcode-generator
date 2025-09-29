@@ -7,6 +7,7 @@ import (
 	"qrcodegen/internal/delivery"
 	"qrcodegen/internal/delivery/http"
 	"qrcodegen/internal/pkg/database"
+	"qrcodegen/internal/pkg/geo"
 	"qrcodegen/internal/repository/postgres"
 	"qrcodegen/internal/usecase"
 
@@ -24,6 +25,8 @@ func New() *fx.App {
 			database.NewDBPool,
 
 			postgres.NewRepository,
+
+			geo.NewGeoResolver,
 
 			usecase.NewUserUseCase,
 			usecase.NewLinkUseCase,
@@ -63,5 +66,10 @@ func New() *fx.App {
 }
 
 func NewFiberApp() *fiber.App {
-	return fiber.New()
+	app := fiber.New(fiber.Config{
+		EnableTrustedProxyCheck: true,
+		TrustedProxies:          []string{"172.16.0.0/12", "192.168.0.0/16", "10.0.0.0/8"},
+		ProxyHeader:             fiber.HeaderXForwardedFor,
+	})
+	return app
 }

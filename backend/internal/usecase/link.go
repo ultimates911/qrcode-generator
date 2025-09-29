@@ -6,12 +6,16 @@ import (
 	"encoding/base64"
 	"errors"
 	"fmt"
+	"time"
+
+	"github.com/rs/zerolog/log"
 
 	"qrcodegen/internal/dto"
 	"qrcodegen/internal/repository/postgres"
 	sqldb "qrcodegen/sqlc/generated"
 
 	"github.com/jackc/pgx/v5"
+	"github.com/ua-parser/uap-go/uaparser"
 )
 
 const (
@@ -25,12 +29,19 @@ var (
 	ErrLinkNotFound    = errors.New("link not found or access denied")
 )
 
-type LinkUseCase struct {
-	repo postgres.Repository
+type GeoResolver interface {
+	Resolve(ip string) (string, string, bool)
 }
 
-func NewLinkUseCase(repo postgres.Repository) *LinkUseCase {
-	return &LinkUseCase{repo: repo}
+type LinkUseCase struct {
+	repo     postgres.Repository
+	uaParser *uaparser.Parser
+	geo      GeoResolver
+}
+
+func NewLinkUseCase(repo postgres.Repository, geo GeoResolver) *LinkUseCase {
+	parser := uaparser.NewFromSaved()
+	return &LinkUseCase{repo: repo, uaParser: parser, geo: geo}
 }
 
 func generateHash(length int) (string, error) {
@@ -193,4 +204,69 @@ func (uc *LinkUseCase) EditLink(ctx context.Context, linkID int64, userID int64,
 		Message: "Link updated successfully",
 		ID:      linkID,
 	}, nil
+}
+
+func (uc *LinkUseCase) Redirect(ctx context.Context, hash, referer, userAgent, ip string) (string, error) {
+	
+	link, err := uc.repo.GetLinkByHash(ctx, hash)
+	if err != nil {
+		if errors.Is(err, pgx.ErrNoRows) {
+			return "", ErrLinkNotFound
+		}
+		return "", fmt.Errorf("failed to get link by hash: %w", err)
+	}
+
+	go func() {
+		ctxBg, cancel := context.WithTimeout(context.Background(), 2*time.Second)
+		defer cancel()
+		uc.createTransition(ctxBg, link.ID, referer, userAgent, ip)
+	}()
+
+	return link.OriginalUrl, nil
+}
+
+func (uc *LinkUseCase) createTransition(ctx context.Context, linkID int64, referer, userAgent, ip string) {
+	var refPtr, uaPtr *string
+	if referer != "" {
+		refPtr = &referer
+	}
+	if userAgent != "" {
+		uaPtr = &userAgent
+	}
+
+	client := uc.uaParser.Parse(userAgent)
+	var brPtr, osPtr *string
+	if client.UserAgent.Family != "" {
+		brPtr = &client.UserAgent.Family
+	}
+	if client.Os.Family != "" {
+		osPtr = &client.Os.Family
+	}
+
+	var countryPtr, cityPtr *string
+	if uc.geo != nil && ip != "" {
+		if country, city, ok := uc.geo.Resolve(ip); ok {
+			if country != "" {
+				countryPtr = &country
+			}
+			if city != "" {
+				cityPtr = &city
+			}
+		}
+	}
+
+	params := sqldb.CreateTransitionParams{
+		LinkID:    linkID,
+		Country:   countryPtr,
+		City:      cityPtr,
+		Referer:   refPtr,
+		UserAgent: uaPtr,
+		Browser:   brPtr,
+		Os:        osPtr,
+	}
+
+	err := uc.repo.CreateTransition(ctx, params)
+	if err != nil {
+		log.Error().Err(err).Msg("Failed to create transition")
+	}
 }

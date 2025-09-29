@@ -30,6 +30,8 @@ func (r *Router) Register(app *fiber.App) {
 	app.Use(middleware.Logger())
 	app.Use(cors.New())
 
+	app.Get("/redirect/:hash", r.linkHandler.Redirect)
+
 	apiV1 := app.Group("/api/v1")
 
 	apiV1.Post("/register", r.userHandler.Register)

@@ -15,11 +15,10 @@ services:
       dockerfile: Dockerfile
     image: qrcode-backend:latest
     container_name: qrcode-backend
-    environment:
-      - PORT=8080
-      - DATABASE_URL=postgres://qrcode:qrcode@db:5432/qrcode?sslmode=disable
-    expose:
-      - "8080"
+    env_file:
+    - ./backend/.env
+    ports:
+      - "8082:8080"
     depends_on:
       migrate:
         condition: service_completed_successfully

@@ -4,6 +4,8 @@ import (
 	"errors"
 	"strconv"
 
+	"qrcodegen/config"
+
 	"qrcodegen/internal/dto"
 	"qrcodegen/internal/usecase"
 
@@ -14,12 +16,14 @@ import (
 type LinkHandler struct {
 	validate    *validator.Validate
 	linkUseCase *usecase.LinkUseCase
+	cfg         *config.Config
 }
 
-func NewLinkHandler(validate *validator.Validate, linkUseCase *usecase.LinkUseCase) *LinkHandler {
+func NewLinkHandler(validate *validator.Validate, linkUseCase *usecase.LinkUseCase, cfg *config.Config) *LinkHandler {
 	return &LinkHandler{
 		validate:    validate,
 		linkUseCase: linkUseCase,
+		cfg:         cfg,
 	}
 }
 
@@ -139,4 +143,25 @@ func (h *LinkHandler) EditLink(c *fiber.Ctx) error {
 	}
 
 	return c.Status(fiber.StatusOK).JSON(resp)
+}
+
+func (h *LinkHandler) Redirect(c *fiber.Ctx) error {
+	hash := c.Params("hash")
+	if hash == "" {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "Hash is required"})
+	}
+
+	referer := c.Get("Referer")
+	userAgent := c.Get("User-Agent")
+	ip := c.IP()
+
+	originalURL, err := h.linkUseCase.Redirect(c.Context(), hash, referer, userAgent, ip)
+	if err != nil {
+		if errors.Is(err, usecase.ErrLinkNotFound) {
+			return c.Status(fiber.StatusNotFound).JSON(fiber.Map{"error": err.Error()})
+		}
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": "Internal server error"})
+	}
+
+	return c.Redirect(originalURL, fiber.StatusFound)
 }
