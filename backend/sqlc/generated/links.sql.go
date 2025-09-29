@@ -78,6 +78,43 @@ func (q *Queries) CreateQRCode(ctx context.Context, arg CreateQRCodeParams) (QrC
 	return i, err
 }
 
+const createTransition = `-- name: CreateTransition :exec
+INSERT INTO transitions (
+  link_id,
+  country,
+  city,
+  referer,
+  user_agent,
+  browser,
+  os
+) VALUES (
+  $1, $2, $3, $4, $5, $6, $7
+)
+`
+
+type CreateTransitionParams struct {
+	LinkID    int64   `json:"link_id"`
+	Country   *string `json:"country"`
+	City      *string `json:"city"`
+	Referer   *string `json:"referer"`
+	UserAgent *string `json:"user_agent"`
+	Browser   *string `json:"browser"`
+	Os        *string `json:"os"`
+}
+
+func (q *Queries) CreateTransition(ctx context.Context, arg CreateTransitionParams) error {
+	_, err := q.db.Exec(ctx, createTransition,
+		arg.LinkID,
+		arg.Country,
+		arg.City,
+		arg.Referer,
+		arg.UserAgent,
+		arg.Browser,
+		arg.Os,
+	)
+	return err
+}
+
 const getLinkAndQRCodeByID = `-- name: GetLinkAndQRCodeByID :one
 SELECT
     l.id,

@@ -77,6 +77,8 @@ func (h *LinkHandler) DownloadQR(c *fiber.Ctx) error {
 		smoothing = *link.Smoothing
 	}
 
+	redirectURL := fmt.Sprintf("%s/redirect/%s", h.cfg.AppBaseURL, link.Hash)
+
 	var (
 		data        []byte
 		contentType string
@@ -84,15 +86,15 @@ func (h *LinkHandler) DownloadQR(c *fiber.Ctx) error {
 	)
 	switch typ {
 	case "png":
-		data, err = qrcode.GeneratePNG(link.OriginalURL, link.Color, link.Background, smoothing)
+		data, err = qrcode.GeneratePNG(redirectURL, link.Color, link.Background, smoothing)
 		contentType = "image/png"
 		filename = fmt.Sprintf("qr-%d.png", linkID)
 	case "svg":
-		data, err = qrcode.GenerateSVG(link.OriginalURL, link.Color, link.Background, smoothing)
+		data, err = qrcode.GenerateSVG(redirectURL, link.Color, link.Background, smoothing)
 		contentType = "image/svg+xml"
 		filename = fmt.Sprintf("qr-%d.svg", linkID)
 	case "pdf":
-		data, err = qrcode.GeneratePDF(link.OriginalURL, link.Color, link.Background, smoothing)
+		data, err = qrcode.GeneratePDF(redirectURL, link.Color, link.Background, smoothing)
 		contentType = "application/pdf"
 		filename = fmt.Sprintf("qr-%d.pdf", linkID)
 	default:

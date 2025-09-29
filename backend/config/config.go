@@ -1,10 +1,11 @@
 package config
 
 import (
-	"github.com/rs/zerolog/log"
 	"os"
 	"strconv"
 	"time"
+
+	"github.com/rs/zerolog/log"
 )
 
 type Config struct {
@@ -12,6 +13,10 @@ type Config struct {
 	DatabaseURL       string
 	JWTSecret         string
 	JWTTTL            time.Duration
+	AppBaseURL        string
+
+	IPInfoToken       string
+	IPInfoHTTPTimeout time.Duration
 }
 
 func New() *Config {
@@ -32,6 +37,10 @@ func New() *Config {
 		DatabaseURL:       getEnv("DATABASE_URL", ""),
 		JWTSecret:         jwtSecret,
 		JWTTTL:            time.Duration(ttlMinutes) * time.Minute,
+		AppBaseURL:        getEnv("APP_BASE_URL", "http://localhost:8080"),
+
+		IPInfoToken:       getEnv("IPINFO_TOKEN", ""),
+		IPInfoHTTPTimeout: time.Duration(2) * time.Second,
 	}
 }
 
