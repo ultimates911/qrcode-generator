@@ -10,5 +10,5 @@ FROM gcr.io/distroless/base-debian12
 WORKDIR /app
 COPY --from=builder /app/server /app/server
 EXPOSE 8080
-USER nonroot:nonroot
+USER nonroot:nonroot    
 ENTRYPOINT ["/app/server"]
