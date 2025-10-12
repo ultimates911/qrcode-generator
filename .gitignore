@@ -11,3 +11,4 @@ backend/tmp
 **/docker-data
 
 .idea
+.vscode

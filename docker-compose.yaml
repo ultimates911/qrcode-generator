@@ -1,27 +1,70 @@
 services:
+  migrate:
+    build:
+      context: .
+      dockerfile: ./backend/Dockerfile.migrate
+    command: ["-dir", "/migrations", "postgres", "postgres://qrcode:qrcode@db:5432/qrcode?sslmode=disable", "up"]
+    depends_on:
+      db:
+        condition: service_healthy
+    restart: on-failure
+    networks:
+      - qrcode_bridge
+
   backend:
     build:
       context: ./backend
-      dockerfile: ../docker/backend/Dockerfile
+      dockerfile: Dockerfile
     image: qrcode-backend:latest
     container_name: qrcode-backend
+    env_file:
+    - ./backend/.env
+    networks:
+      - qrcode_bridge
+    depends_on:
+      migrate:
+        condition: service_completed_successfully
+
+  db:
+    image: postgres:16-alpine
     environment:
-      - PORT=8080
-    expose:
-      - "8080"
+      - POSTGRES_DB=qrcode
+      - POSTGRES_USER=qrcode
+      - POSTGRES_PASSWORD=qrcode
+      - PGDATA=/var/lib/postgresql/data/pgdata
+    volumes:
+      - pgdata:/var/lib/postgresql/data
     healthcheck:
-      test: ["CMD", "/app/server", "-h"]
-      interval: 10s
-      timeout: 2s
-      retries: 3
+      test: ["CMD-SHELL","pg_isready -U $$POSTGRES_USER -d $$POSTGRES_DB"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+      start_period: 10s
+    ports:
+      - "5432:5432"
+    restart: unless-stopped
+    networks:
+      - qrcode_bridge
 
   frontend:
     build:
       context: ./frontend
-      dockerfile: ../docker/frontend/Dockerfile
+      dockerfile: Dockerfile
     image: qrcode-frontend:latest
     container_name: qrcode-frontend
     ports:
       - "5173:80"
     depends_on:
       - backend
+    networks:
+      - qrcode_bridge
+
+volumes:
+  pgdata:
+
+networks:
+  qrcode_bridge:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 172.25.0.0/16 
