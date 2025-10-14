@@ -1,15 +1,11 @@
-# ---- dev stage ----
 FROM node:20-alpine
 WORKDIR /app
 
-# Установка зависимостей
 COPY package*.json ./
-RUN npm ci
+RUN npm install
 
-# Кладём исходники (в рантайме их перекроет bind-mount)
 COPY . .
 
-# Настройки для отслеживания файлов в Docker
 ENV HOST=0.0.0.0
 ENV CHOKIDAR_USEPOLLING=true
 
