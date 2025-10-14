@@ -22,6 +22,18 @@ func NewUserHandler(validate *validator.Validate, userUseCase *usecase.UserUseCa
 	}
 }
 
+// Register godoc
+// @Summary Register a new user
+// @Description Register a new user with name, email, and password
+// @Tags auth
+// @Accept  json
+// @Produce  json
+// @Param   user  body      dto.RegisterRequest  true  "User registration data"
+// @Success 201   {object}  dto.RegisterResponse
+// @Failure 400   {object}  dto.GenericError
+// @Failure 409   {object}  dto.GenericError
+// @Failure 500   {object}  dto.GenericError
+// @Router /register [post]
 func (h *UserHandler) Register(c *fiber.Ctx) error {
 	var req dto.RegisterRequest
 	if err := c.BodyParser(&req); err != nil {
@@ -44,6 +56,18 @@ func (h *UserHandler) Register(c *fiber.Ctx) error {
 	return c.Status(fiber.StatusCreated).JSON(resp)
 }
 
+// Login godoc
+// @Summary Log in a user
+// @Description Log in a user with email and password, returns a JWT token in a cookie
+// @Tags auth
+// @Accept  json
+// @Produce  json
+// @Param   user  body      dto.LoginRequest  true  "User login data"
+// @Success 200   {string}  string "OK"
+// @Failure 400   {object}  dto.GenericError
+// @Failure 401   {object}  dto.GenericError
+// @Failure 500   {object}  dto.GenericError
+// @Router /login [post]
 func (h *UserHandler) Login(c *fiber.Ctx) error {
 	var req dto.LoginRequest
 	if err := c.BodyParser(&req); err != nil {

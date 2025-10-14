@@ -2,11 +2,13 @@ package delivery
 
 import (
 	"qrcodegen/config"
+	_ "qrcodegen/docs"
 	"qrcodegen/internal/delivery/http"
 	"qrcodegen/internal/delivery/middleware"
 
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/fiber/v2/middleware/cors"
+	"github.com/clode-labs/gofiber-swagger/v2"
 )
 
 type Router struct {
@@ -29,6 +31,8 @@ func (r *Router) Register(app *fiber.App) {
 	app.Use(middleware.Recovery())
 	app.Use(middleware.Logger())
 	app.Use(cors.New())
+
+	app.Get("/swagger/*", swagger.HandlerDefault)
 
 	app.Get("/redirect/:hash", r.linkHandler.Redirect)
 

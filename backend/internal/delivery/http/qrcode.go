@@ -23,6 +23,17 @@ func NewQRHandler(validate *validator.Validate, qrUseCase *usecase.QRUseCase) *Q
 	return &QRHandler{validate: validate, qrUseCase: qrUseCase}
 }
 
+// Generate godoc
+// @Summary Generate a QR code
+// @Description Generate a QR code for a given URL with custom styling
+// @Tags qrcode
+// @Accept  json
+// @Produce  image/png
+// @Param   qrcode  body      dto.GenerateQRCodeRequest  true  "QR code generation data"
+// @Success 201     {string}  string "Returns the generated QR code as a PNG image"
+// @Failure 400     {object}  dto.GenericError
+// @Failure 500     {object}  dto.GenericError
+// @Router /qrcode [post]
 func (h *QRHandler) Generate(c *fiber.Ctx) error {
 	var req dto.GenerateQRCodeRequest
 	if err := c.BodyParser(&req); err != nil {
@@ -42,6 +53,19 @@ func (h *QRHandler) Generate(c *fiber.Ctx) error {
 	return c.Status(fiber.StatusCreated).Send(png)
 }
 
+// DownloadQR godoc
+// @Summary Download a QR code for a link
+// @Description Download a QR code for a specific link by its ID in various formats (png, svg, pdf)
+// @Tags links
+// @Produce  application/octet-stream
+// @Param   id   path      int  true  "Link ID"
+// @Param   type query     string  false "File type (png, svg, pdf)"  Enums(png, svg, pdf)
+// @Success 200 {string} string "Returns the QR code file for download"
+// @Failure 400 {object} dto.GenericError
+// @Failure 401 {object} dto.GenericError
+// @Failure 404 {object} dto.GenericError
+// @Failure 500 {object} dto.GenericError
+// @Router /links/{id}/download [get]
 func (h *LinkHandler) DownloadQR(c *fiber.Ctx) error {
 	linkID, err := c.ParamsInt("id")
 	if err != nil {
