@@ -27,6 +27,18 @@ func NewLinkHandler(validate *validator.Validate, linkUseCase *usecase.LinkUseCa
 	}
 }
 
+// CreateLink godoc
+// @Summary Create a new link
+// @Description Create a new shortened link for the authenticated user
+// @Tags links
+// @Accept  json
+// @Produce  json
+// @Param   link  body      dto.CreateLinkRequest  true  "Link data"
+// @Success 201   {object}  dto.CreateLinkResponse
+// @Failure 400   {object}  dto.GenericError
+// @Failure 401   {object}  dto.GenericError
+// @Failure 500   {object}  dto.GenericError
+// @Router /links/create [post]
 func (h *LinkHandler) CreateLink(c *fiber.Ctx) error {
 	var req dto.CreateLinkRequest
 	if err := c.BodyParser(&req); err != nil {
@@ -57,6 +69,15 @@ func (h *LinkHandler) CreateLink(c *fiber.Ctx) error {
 	return c.Status(fiber.StatusCreated).JSON(resp)
 }
 
+// GetAllLinks godoc
+// @Summary Get all links for a user
+// @Description Get all links created by the authenticated user
+// @Tags links
+// @Produce  json
+// @Success 200 {object} dto.GetAllLinksResponse
+// @Failure 401 {object} dto.GenericError
+// @Failure 500 {object} dto.GenericError
+// @Router /links [get]
 func (h *LinkHandler) GetAllLinks(c *fiber.Ctx) error {
 	userIDStr, ok := c.Locals("userID").(string)
 	if !ok {
@@ -78,6 +99,18 @@ func (h *LinkHandler) GetAllLinks(c *fiber.Ctx) error {
 	return c.Status(fiber.StatusOK).JSON(resp)
 }
 
+// GetLink godoc
+// @Summary Get a link by ID
+// @Description Get a specific link by its ID for the authenticated user
+// @Tags links
+// @Produce  json
+// @Param   id   path      int  true  "Link ID"
+// @Success 200 {object} dto.GetLinkResponse
+// @Failure 400 {object} dto.GenericError
+// @Failure 401 {object} dto.GenericError
+// @Failure 404 {object} dto.GenericError
+// @Failure 500 {object} dto.GenericError
+// @Router /links/{id} [get]
 func (h *LinkHandler) GetLink(c *fiber.Ctx) error {
 	linkID, err := c.ParamsInt("id")
 	if err != nil {
@@ -107,6 +140,20 @@ func (h *LinkHandler) GetLink(c *fiber.Ctx) error {
 	return c.Status(fiber.StatusOK).JSON(resp)
 }
 
+// EditLink godoc
+// @Summary Edit a link
+// @Description Edit a specific link by its ID for the authenticated user
+// @Tags links
+// @Accept  json
+// @Produce  json
+// @Param   id   path      int  true  "Link ID"
+// @Param   link body      dto.EditLinkRequest  true  "Updated link data"
+// @Success 200 {object} dto.EditLinkResponse
+// @Failure 400 {object} dto.GenericError
+// @Failure 401 {object} dto.GenericError
+// @Failure 404 {object} dto.GenericError
+// @Failure 500 {object} dto.GenericError
+// @Router /links/{id} [patch]
 func (h *LinkHandler) EditLink(c *fiber.Ctx) error {
 	linkID, err := c.ParamsInt("id")
 	if err != nil {
@@ -145,6 +192,16 @@ func (h *LinkHandler) EditLink(c *fiber.Ctx) error {
 	return c.Status(fiber.StatusOK).JSON(resp)
 }
 
+// Redirect godoc
+// @Summary Redirect to original URL
+// @Description Redirects a shortened link to its original URL
+// @Tags redirect
+// @Param   hash   path      string  true  "Link hash"
+// @Success 302 {string} string "Redirects to the original URL"
+// @Failure 400 {object} dto.GenericError
+// @Failure 404 {object} dto.GenericError
+// @Failure 500 {object} dto.GenericError
+// @Router /redirect/{hash} [get]
 func (h *LinkHandler) Redirect(c *fiber.Ctx) error {
 	hash := c.Params("hash")
 	if hash == "" {
@@ -166,6 +223,17 @@ func (h *LinkHandler) Redirect(c *fiber.Ctx) error {
 	return c.Redirect(originalURL, fiber.StatusFound)
 }
 
+// GetTransitionsByLink godoc
+// @Summary Get transitions for a link
+// @Description Get transition analytics for a specific link by its ID
+// @Tags links
+// @Produce  json
+// @Param   id   path      int  true  "Link ID"
+// @Success 200 {object} dto.GetTransitionsResponse
+// @Failure 400 {object} dto.GenericError
+// @Failure 401 {object} dto.GenericError
+// @Failure 500 {object} dto.GenericError
+// @Router /links/{id}/transitions [get]
 func (h *LinkHandler) GetTransitionsByLink(c *fiber.Ctx) error {
 	linkID, err := c.ParamsInt("id")
 	if err != nil {

@@ -37,6 +37,6 @@ func Logger() fiber.Handler {
 			Str("user_agent", c.Get("User-Agent")).
 			Msg("Request")
 
-		return nil
+		return chainErr
 	}
 }
