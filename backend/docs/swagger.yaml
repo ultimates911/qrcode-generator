@@ -1,0 +1,496 @@
+basePath: /api/v1
+definitions:
+  dto.CreateLinkRequest:
+    properties:
+      original_url:
+        type: string
+    required:
+    - original_url
+    type: object
+  dto.CreateLinkResponse:
+    properties:
+      id:
+        type: integer
+      message:
+        type: string
+    type: object
+  dto.EditLinkRequest:
+    properties:
+      background:
+        type: string
+      color:
+        type: string
+      original_url:
+        type: string
+      smoothing:
+        maximum: 0.5
+        minimum: 0
+        type: number
+    required:
+    - background
+    - color
+    - original_url
+    type: object
+  dto.EditLinkResponse:
+    properties:
+      id:
+        type: integer
+      message:
+        type: string
+    type: object
+  dto.GenerateQRCodeRequest:
+    properties:
+      background:
+        type: string
+      color:
+        type: string
+      smoothing:
+        maximum: 0.5
+        minimum: 0
+        type: number
+      url:
+        type: string
+    required:
+    - background
+    - color
+    - url
+    type: object
+  dto.GenericError:
+    properties:
+      error:
+        example: Some error message
+        type: string
+    type: object
+  dto.GetAllLinksResponse:
+    properties:
+      links:
+        items:
+          $ref: '#/definitions/dto.LinkInfo'
+        type: array
+      message:
+        type: string
+    type: object
+  dto.GetLinkResponse:
+    properties:
+      background:
+        type: string
+      color:
+        type: string
+      created_at:
+        type: string
+      hash:
+        type: string
+      id:
+        type: integer
+      original_url:
+        type: string
+      smoothing:
+        type: number
+      updated_at:
+        type: string
+    type: object
+  dto.GetTransitionsResponse:
+    properties:
+      transitions:
+        items:
+          $ref: '#/definitions/dto.TransitionItem'
+        type: array
+    type: object
+  dto.LinkInfo:
+    properties:
+      id:
+        type: integer
+      original_url:
+        type: string
+    type: object
+  dto.LoginRequest:
+    properties:
+      email:
+        type: string
+      password:
+        type: string
+    required:
+    - email
+    - password
+    type: object
+  dto.RegisterRequest:
+    properties:
+      email:
+        type: string
+      name:
+        type: string
+      password:
+        minLength: 8
+        type: string
+      second_password:
+        type: string
+    required:
+    - email
+    - name
+    - password
+    - second_password
+    type: object
+  dto.RegisterResponse:
+    properties:
+      message:
+        type: string
+    type: object
+  dto.TransitionItem:
+    properties:
+      browser:
+        type: string
+      city:
+        type: string
+      country:
+        type: string
+      created_at:
+        type: string
+      id:
+        type: integer
+      os:
+        type: string
+      referer:
+        type: string
+      user_agent:
+        type: string
+    type: object
+info:
+  contact: {}
+  title: QR Code Generator API
+paths:
+  /links:
+    get:
+      description: Get all links created by the authenticated user
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/dto.GetAllLinksResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/dto.GenericError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/dto.GenericError'
+      summary: Get all links for a user
+      tags:
+      - links
+  /links/{id}:
+    get:
+      description: Get a specific link by its ID for the authenticated user
+      parameters:
+      - description: Link ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/dto.GetLinkResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/dto.GenericError'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/dto.GenericError'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/dto.GenericError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/dto.GenericError'
+      summary: Get a link by ID
+      tags:
+      - links
+    patch:
+      consumes:
+      - application/json
+      description: Edit a specific link by its ID for the authenticated user
+      parameters:
+      - description: Link ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: Updated link data
+        in: body
+        name: link
+        required: true
+        schema:
+          $ref: '#/definitions/dto.EditLinkRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/dto.EditLinkResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/dto.GenericError'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/dto.GenericError'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/dto.GenericError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/dto.GenericError'
+      summary: Edit a link
+      tags:
+      - links
+  /links/{id}/download:
+    get:
+      description: Download a QR code for a specific link by its ID in various formats
+        (png, svg, pdf)
+      parameters:
+      - description: Link ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: File type (png, svg, pdf)
+        enum:
+        - png
+        - svg
+        - pdf
+        in: query
+        name: type
+        type: string
+      produces:
+      - application/octet-stream
+      responses:
+        "200":
+          description: Returns the QR code file for download
+          schema:
+            type: string
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/dto.GenericError'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/dto.GenericError'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/dto.GenericError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/dto.GenericError'
+      summary: Download a QR code for a link
+      tags:
+      - links
+  /links/{id}/transitions:
+    get:
+      description: Get transition analytics for a specific link by its ID
+      parameters:
+      - description: Link ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/dto.GetTransitionsResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/dto.GenericError'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/dto.GenericError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/dto.GenericError'
+      summary: Get transitions for a link
+      tags:
+      - links
+  /links/create:
+    post:
+      consumes:
+      - application/json
+      description: Create a new shortened link for the authenticated user
+      parameters:
+      - description: Link data
+        in: body
+        name: link
+        required: true
+        schema:
+          $ref: '#/definitions/dto.CreateLinkRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/dto.CreateLinkResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/dto.GenericError'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/dto.GenericError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/dto.GenericError'
+      summary: Create a new link
+      tags:
+      - links
+  /login:
+    post:
+      consumes:
+      - application/json
+      description: Log in a user with email and password, returns a JWT token in a
+        cookie
+      parameters:
+      - description: User login data
+        in: body
+        name: user
+        required: true
+        schema:
+          $ref: '#/definitions/dto.LoginRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            type: string
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/dto.GenericError'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/dto.GenericError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/dto.GenericError'
+      summary: Log in a user
+      tags:
+      - auth
+  /qrcode:
+    post:
+      consumes:
+      - application/json
+      description: Generate a QR code for a given URL with custom styling
+      parameters:
+      - description: QR code generation data
+        in: body
+        name: qrcode
+        required: true
+        schema:
+          $ref: '#/definitions/dto.GenerateQRCodeRequest'
+      produces:
+      - image/png
+      responses:
+        "201":
+          description: Returns the generated QR code as a PNG image
+          schema:
+            type: string
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/dto.GenericError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/dto.GenericError'
+      summary: Generate a QR code
+      tags:
+      - qrcode
+  /redirect/{hash}:
+    get:
+      description: Redirects a shortened link to its original URL
+      parameters:
+      - description: Link hash
+        in: path
+        name: hash
+        required: true
+        type: string
+      responses:
+        "302":
+          description: Redirects to the original URL
+          schema:
+            type: string
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/dto.GenericError'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/dto.GenericError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/dto.GenericError'
+      summary: Redirect to original URL
+      tags:
+      - redirect
+  /register:
+    post:
+      consumes:
+      - application/json
+      description: Register a new user with name, email, and password
+      parameters:
+      - description: User registration data
+        in: body
+        name: user
+        required: true
+        schema:
+          $ref: '#/definitions/dto.RegisterRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/dto.RegisterResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/dto.GenericError'
+        "409":
+          description: Conflict
+          schema:
+            $ref: '#/definitions/dto.GenericError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/dto.GenericError'
+      summary: Register a new user
+      tags:
+      - auth
+swagger: "2.0"
