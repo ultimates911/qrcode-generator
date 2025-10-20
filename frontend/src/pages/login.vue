@@ -42,7 +42,7 @@ async function handleLogin() {
   error.value = null
 
   try {
-    const res = await fetch('http://localhost:5173/api/v1/login', {
+    const res = await fetch('/api/v1/login', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       credentials: 'include',
