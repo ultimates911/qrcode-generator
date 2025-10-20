@@ -1,0 +1,68 @@
+<style scoped>
+
+body {
+  margin: 0;
+  font-family: system-ui, sans-serif;
+  height: 100vh; 
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.login-container { 
+  display: flex; 
+  flex-direction: column; 
+  align-items: center; 
+  justify-content: center; 
+  height: 100vh; }
+
+h2 { 
+  margin-bottom: 20px; 
+}
+
+.input-group {
+  margin-bottom: 15px;
+  position: relative;
+}
+
+input {
+  padding: 12px 14px;
+  border: 1px solid #6c8c8c;
+  border-radius: 5px;
+  width: 300px;
+  font-size: 15.5px; 
+  height: 40px;
+  box-sizing: border-box; 
+}
+
+
+.password-group .toggle { 
+  position: absolute; 
+  right: 10px; 
+  top: 7px; 
+  cursor: pointer; 
+}
+
+.submit-btn { 
+  background-color: #6c8c8c; 
+  border: none; 
+  color: white; 
+  height: 35px;
+  padding: 10px 16px; 
+  border-radius: 6px; 
+  cursor: pointer; 
+}
+
+.create-account {
+  margin-top: 10px;
+  font-size: 14px;
+}
+
+.error {
+  color: red;
+  margin-top: 8px;
+  margin-bottom: 0px;
+  font-size: 14px;
+}
+
+</style>
