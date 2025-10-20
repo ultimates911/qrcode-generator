@@ -5,6 +5,7 @@
       <div class="input-group">
         <input type="email" v-model="email" placeholder="Почта" required />
       </div>
+
       <div class="input-group password-group">
         <input
           :type="showPassword ? 'text' : 'password'"
@@ -15,7 +16,7 @@
         <span class="toggle" @click="showPassword = !showPassword">👁</span>
       </div>
 
-      <button type="submit" class="submit-btn">Отправить</button>
+      <button type="submit" class="submit-btn">Войти</button>
 
       <p v-if="error" class="error">{{ error }}</p>
     </form>
@@ -44,7 +45,7 @@ async function handleLogin() {
     const res = await fetch('http://localhost:8080/api/v1/login', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      credentials: 'include', // 
+      credentials: 'include',
       body: JSON.stringify({
         email: email.value,
         password: password.value,
@@ -53,11 +54,16 @@ async function handleLogin() {
 
     if (!res.ok) {
       let errText = res.statusText
+
       try {
         const errData = await res.json()
-        errText = errData.message || errText
-      } catch (e) { /* noop */ }
-      error.value = `Ошибка: ${errText}`
+        if (errData.message) errText = errData.message
+      } catch (e) {
+        if (res.status >= 500) errText = 'Ошибка сервера. Попробуйте позже.'
+        else if (res.status === 0) errText = 'Ошибка сети. Проверьте подключение.'
+      }
+
+      error.value = errText
       return
     }
 
