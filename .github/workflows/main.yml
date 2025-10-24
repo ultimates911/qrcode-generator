@@ -3,34 +3,54 @@ name: Simple Deploy
 on:
   push:
     branches: [ main ]
+  workflow_dispatch:
+
+env:
+  REPO_URL: https://github.com/ultimates911/qrcode-generator.git
+  DEPLOY_PATH: /app
+  BRANCH: main
 
 jobs:
   deploy:
     runs-on: ubuntu-latest
-    
+    concurrency:
+      group: qrcode-deploy-${{ github.ref }}
+      cancel-in-progress: true
+
     steps:
-    - name: Checkout code
-      uses: actions/checkout@v3
-    
-    - name: Setup SSH
+    - name: Prepare SSH
       run: |
         mkdir -p ~/.ssh
         echo "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/id_rsa
         chmod 600 ~/.ssh/id_rsa
         ssh-keyscan -H ${{ secrets.VM_HOST }} >> ~/.ssh/known_hosts 2>/dev/null || true
-    
-    - name: Deploy to server
+
+    - name: Deploy on VM
+      env:
+        VM_HOST: ${{ secrets.VM_HOST }}
+        VM_USER: ${{ secrets.VM_USER }}
       run: |
-        ssh -o StrictHostKeyChecking=no ${{ secrets.VM_USER }}@${{ secrets.VM_HOST }} << 'DEPLOY'
-          cd /app
-          # Первый раз - клонируем, потом - обновляем
+        ssh -o StrictHostKeyChecking=yes ${VM_USER}@${VM_HOST} << EOF
+          set -euo pipefail
+
+          sudo mkdir -p ${DEPLOY_PATH}
+          sudo chown -R \$USER:\$USER ${DEPLOY_PATH}
+          cd ${DEPLOY_PATH}
+
           if [ -d .git ]; then
-            git pull origin main
+            git fetch origin ${BRANCH}
+            git reset --hard origin/${BRANCH}
           else
-            git clone https://github.com/DmitryGolub/qrcode-generator.git .
+            git clone --depth 1 -b ${BRANCH} ${REPO_URL} .
           fi
-          # Запускаем docker-compose
-          docker-compose down
-          docker-compose up -d
-          docker-compose ps
-        DEPLOY
+
+          if docker compose version >/dev/null 2>&1; then
+            DC="docker compose"
+          else
+            DC="docker-compose"
+          fi
+
+          \$DC down || true
+          \$DC up -d --build --remove-orphans
+          \$DC ps
+        EOF
