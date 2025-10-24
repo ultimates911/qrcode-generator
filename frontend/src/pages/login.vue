@@ -20,25 +20,23 @@
           :class="{ 'visible': showPassword }"
         >
           <svg class="eye-icon" width="20" height="20" viewBox="0 0 24 24" fill="none">
-            <!-- Перечеркнутая линия (показывается когда пароль скрыт) -->
             <line 
               x1="4" y1="4" x2="20" y2="20" 
               stroke="currentColor" 
               stroke-width="2"
               class="strike-through"
             />
-            <!-- Иконка глаза -->
             <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" stroke="currentColor" stroke-width="2"/>
             <circle cx="12" cy="12" r="3" stroke="currentColor" stroke-width="2"/>
           </svg>
         </button>
       </div>
 
+      <p v-if="error" class="error">{{ error }}</p>
+
       <button type="submit" class="submit-btn" :disabled="loading">
         {{ loading ? 'Вход...' : 'Войти' }}
       </button>
-
-      <p v-if="error" class="error">{{ error }}</p>
     </form>
 
     <p class="create-account">

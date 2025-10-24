@@ -35,14 +35,6 @@ input {
   box-sizing: border-box; 
 }
 
-
-.password-group .toggle { 
-  position: absolute; 
-  right: 10px; 
-  top: 7px; 
-  cursor: pointer; 
-}
-
 .password-group {
   position: relative;
 }
@@ -55,7 +47,7 @@ input {
   background: none;
   border: none;
   cursor: pointer;
-  padding: 4px;
+  padding: 0px;
   color: #666;
   border-radius: 4px;
   transition: all 0.2s ease;
@@ -111,8 +103,8 @@ input {
 
 .error {
   color: red;
-  margin-top: 8px;
-  margin-bottom: 0px;
+  margin-top: -6px;
+  margin-bottom: 10px;
   font-size: 14px;
 }
 
