@@ -16,7 +16,9 @@
         <span class="toggle" @click="showPassword = !showPassword">👁</span>
       </div>
 
-      <button type="submit" class="submit-btn">Войти</button>
+      <button type="submit" class="submit-btn" :disabled="loading">
+        {{ loading ? 'Вход...' : 'Войти' }}
+      </button>
 
       <p v-if="error" class="error">{{ error }}</p>
     </form>
@@ -36,10 +38,34 @@ const email = ref('')
 const password = ref('')
 const showPassword = ref(false)
 const error = ref(null)
+const loading = ref(false)
 const router = useRouter()
+
+function getErrorMessage(status, errorData = null) {
+  switch (status) {
+    case 400:
+      if (errorData?.message) {
+        return errorData.message
+      }
+      return 'Неверный формат данных. Проверьте введенные данные.'
+    
+    case 401:
+      return 'Неверный email или пароль'
+    
+    case 500:
+      return 'Внутренняя ошибка сервера. Пожалуйста, попробуйте позже.'
+    
+    default:
+      if (errorData?.message) {
+        return errorData.message
+      }
+      return 'Произошла неизвестная ошибка'
+  }
+}
 
 async function handleLogin() {
   error.value = null
+  loading.value = true
 
   try {
     const res = await fetch('/api/v1/login', {
@@ -53,29 +79,35 @@ async function handleLogin() {
     })
 
     if (!res.ok) {
-      let errText = res.statusText
-
+      let errorData = null
+      
       try {
-        const errData = await res.json()
-        if (errData.message) errText = errData.message
+        errorData = await res.json()
       } catch (e) {
-        if (res.status >= 500) errText = 'Ошибка сервера. Попробуйте позже.'
-        else if (res.status === 0) errText = 'Ошибка сети. Проверьте подключение.'
+        console.warn('Server returned non-JSON error response')
       }
-
-      error.value = errText
+      
+      error.value = getErrorMessage(res.status, errorData)
       return
     }
 
     const data = await res.json()
+    
     if (data.token) {
       document.cookie = `jwt_token=${data.token}; path=/; max-age=${7 * 24 * 60 * 60}`
     }
 
     router.push('/dashboard')
+    
   } catch (err) {
-    console.error(err)
-    error.value = 'Ошибка сети. Проверьте подключение.'
+    console.error('Login error:', err)
+    if (err.name === 'TypeError' || err.name === 'NetworkError') {
+      error.value = 'Ошибка сети. Проверьте подключение к интернету.'
+    } else {
+      error.value = 'Произошла непредвиденная ошибка'
+    }
+  } finally {
+    loading.value = false
   }
 }
 </script>
