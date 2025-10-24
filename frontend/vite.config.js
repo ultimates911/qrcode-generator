@@ -18,11 +18,14 @@ export default defineConfig({
     host: true,          // слушать 0.0.0.0 внутри контейнера
     port: 5173,
     strictPort: true,
+    allowedHosts: ['qrcode-itip.freedynamicdns.net'],
     open: false,
     watch: {
       usePolling,        // полезно на Mac/Windows/WSL
     },
     hmr: {
+      host: 'qrcode-itip.freedynamicdns.net',
+      clientPort: 5173,
       // Когда порт опубликован как 5173:5173, этого достаточно.
       // Добавь clientPort: 5173, если браузер не цепляется к HMR за NAT/прокси.
       // clientPort: 5173,
