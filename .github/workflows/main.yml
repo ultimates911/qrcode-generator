@@ -1,0 +1,36 @@
+name: Simple Deploy
+
+on:
+  push:
+    branches: [ main ]
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v3
+    
+    - name: Setup SSH
+      run: |
+        mkdir -p ~/.ssh
+        echo "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/id_rsa
+        chmod 600 ~/.ssh/id_rsa
+        ssh-keyscan -H ${{ secrets.VM_HOST }} >> ~/.ssh/known_hosts 2>/dev/null || true
+    
+    - name: Deploy to server
+      run: |
+        ssh -o StrictHostKeyChecking=no ${{ secrets.VM_USER }}@${{ secrets.VM_HOST }} << 'DEPLOY'
+          cd /app
+          # Первый раз - клонируем, потом - обновляем
+          if [ -d .git ]; then
+            git pull origin main
+          else
+            git clone https://github.com/DmitryGolub/qrcode-generator.git .
+          fi
+          # Запускаем docker-compose
+          docker-compose down
+          docker-compose up -d
+          docker-compose ps
+        DEPLOY
