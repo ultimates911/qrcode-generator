@@ -40,7 +40,7 @@
     </form>
     
     <div class="register-section">
-      <p class="register-text">Впервые у нас???</p>
+      <p class="register-text">Впервые у нас?</p>
       <router-link to="/register" class="create-account-btn">
         Создать аккаунт
       </router-link>
