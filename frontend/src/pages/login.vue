@@ -38,10 +38,13 @@
         {{ loading ? 'Вход...' : 'Войти' }}
       </button>
     </form>
-
-    <p class="create-account">
-      <router-link to="/register">Создать аккаунт</router-link>
-    </p>
+    
+    <div class="register-section">
+      <p class="register-text">Впервые у нас?</p>
+      <router-link to="/register" class="create-account-btn">
+        Создать аккаунт
+      </router-link>
+    </div>
   </div>
 </template>
 

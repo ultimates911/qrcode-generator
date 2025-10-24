@@ -96,16 +96,47 @@ input {
   cursor: pointer; 
 }
 
-.create-account {
-  margin-top: 10px;
-  font-size: 14px;
-}
-
 .error {
   color: red;
   margin-top: -6px;
   margin-bottom: 10px;
   font-size: 14px;
+  width: 300px;
+}
+
+.register-section {
+  text-align: center;
+  margin-top: 20px;
+}
+
+.register-text {
+  margin-top: -20px;
+  margin-bottom: 8px;
+  color: #666;
+  font-size: 14px;
+}
+
+.create-account-btn {
+  display: inline-block;
+  background-color: transparent;
+  border: 2px solid #6c8c8c;
+  color: #6c8c8c;
+  height: 35px;
+  padding: 0 16px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 14px;
+  width: 150px;
+  text-align: center;
+  line-height: 31px;
+  text-decoration: none;
+  transition: all 0.2s ease;
+  box-sizing: border-box;
+}
+
+.create-account-btn:hover {
+  background-color: #6c8c8c;
+  color: white;
 }
 
 </style>
