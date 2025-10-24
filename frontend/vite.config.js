@@ -25,7 +25,7 @@ export default defineConfig({
     },
     hmr: {
       host: 'qrcode-itip.freedynamicdns.net',
-      clientPort: 5173,
+      clientPort: 80,
       // Когда порт опубликован как 5173:5173, этого достаточно.
       // Добавь clientPort: 5173, если браузер не цепляется к HMR за NAT/прокси.
       // clientPort: 5173,
