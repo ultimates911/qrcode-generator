@@ -55,7 +55,7 @@ services:
     image: qrcode-frontend:latest
     container_name: qrcode-frontend
     ports:
-      - "5173:5173"
+      - "80:5173"
     depends_on:
       - backend
     networks:
