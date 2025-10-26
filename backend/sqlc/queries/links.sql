@@ -2,18 +2,19 @@
 INSERT INTO links (
   original_url,
   hash,
-  user_id
+  user_id,
+  name
 ) VALUES (
-  $1, $2, $3
+  $1, $2, $3, $4
 )
-RETURNING id, original_url, hash, created_at, updated_at, user_id;
+RETURNING id, original_url, hash, created_at, updated_at, user_id, name;
 
 -- name: GetLinkByHash :one
-SELECT id, original_url, hash, created_at, updated_at, user_id FROM links
+SELECT id, original_url, hash, created_at, updated_at, user_id, name FROM links
 WHERE hash = $1 LIMIT 1;
 
 -- name: GetLinksByUserID :many
-SELECT id, original_url FROM links
+SELECT id, original_url, name FROM links
 WHERE user_id = $1;
 
 -- name: CreateQRCode :one
@@ -34,6 +35,7 @@ SELECT
     l.hash,
     l.created_at,
     l.updated_at,
+    l.name,
     qc.color,
     qc.background,
     qc.smoothing

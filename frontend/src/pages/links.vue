@@ -15,7 +15,10 @@
 
       <div v-else class="list">
         <div v-for="it in items" :key="it.id" class="row">
-          <input class="url" :value="it.original_url" readonly />
+          <div class="meta">
+            <div class="name">{{ it.name || 'Без имени' }}</div>
+            <input class="url" :value="it.original_url" readonly />
+          </div>
           <div class="actions">
             <button class="icon" title="Аналитика" @click="openAnalytics(it)">
               <span class="i" aria-hidden="true">
@@ -144,6 +147,8 @@ h2 {
   background: #f8fafb;
   box-shadow: 0 3px 10px rgba(0,0,0,.05);
 }
+.meta { display: grid; gap: 6px; }
+.name { font-weight: 600; color: #2e3a44; }
 .url {
   width: 100%;
   padding: 12px 14px;

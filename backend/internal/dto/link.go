@@ -4,6 +4,7 @@ import "time"
 
 type CreateLinkRequest struct {
 	OriginalURL string `json:"original_url" validate:"required,url"`
+	Name        string `json:"name" validate:"required"`
 }
 
 type CreateLinkResponse struct {
@@ -14,6 +15,7 @@ type CreateLinkResponse struct {
 type LinkInfo struct {
 	ID          int64  `json:"id"`
 	OriginalURL string `json:"original_url"`
+	Name        string `json:"name"`
 }
 
 type GetAllLinksResponse struct {
@@ -27,6 +29,7 @@ type GetLinkResponse struct {
 	Hash        string    `json:"hash"`
 	CreatedAt   time.Time `json:"created_at"`
 	UpdatedAt   time.Time `json:"updated_at"`
+	Name        string    `json:"name"`
 	Color       string    `json:"color"`
 	Background  string    `json:"background"`
 	Smoothing   *float64  `json:"smoothing"`

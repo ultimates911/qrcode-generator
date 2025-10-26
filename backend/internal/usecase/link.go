@@ -84,6 +84,7 @@ func (uc *LinkUseCase) CreateLink(ctx context.Context, req dto.CreateLinkRequest
 		OriginalUrl: req.OriginalURL,
 		Hash:        linkHash,
 		UserID:      userID,
+		Name:        req.Name,
 	}
 	createdLink, err := repoWithTx.CreateLink(ctx, linkParams)
 	if err != nil {
@@ -129,6 +130,7 @@ func (uc *LinkUseCase) GetLinkByID(ctx context.Context, linkID int64, userID int
 		Hash:        linkData.Hash,
 		CreatedAt:   linkData.CreatedAt,
 		UpdatedAt:   linkData.UpdatedAt,
+		Name:        linkData.Name,
 		Color:       linkData.Color,
 		Background:  linkData.Background,
 		Smoothing:   linkData.Smoothing,
@@ -154,6 +156,7 @@ func (uc *LinkUseCase) GetAllLinks(ctx context.Context, userID int64) (*dto.GetA
 		linkInfos[i] = dto.LinkInfo{
 			ID:          link.ID,
 			OriginalURL: link.OriginalUrl,
+			Name:        link.Name,
 		}
 	}
 
