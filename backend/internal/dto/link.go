@@ -13,9 +13,11 @@ type CreateLinkResponse struct {
 }
 
 type LinkInfo struct {
-	ID          int64  `json:"id"`
-	OriginalURL string `json:"original_url"`
-	Name        string `json:"name"`
+	ID          int64     `json:"id"`
+	OriginalURL string    `json:"original_url"`
+	Name        string    `json:"name"`
+	CreatedAt   time.Time `json:"created_at"`
+	Transitions int64     `json:"transitions_count"`
 }
 
 type GetAllLinksResponse struct {

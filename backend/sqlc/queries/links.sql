@@ -17,6 +17,36 @@ WHERE hash = $1 LIMIT 1;
 SELECT id, original_url, name FROM links
 WHERE user_id = $1;
 
+-- name: SearchLinksByName :many
+SELECT id, original_url, name FROM links
+WHERE user_id = $1 AND name ILIKE '%' || $2 || '%';
+
+-- name: GetLinksSummaryByUser :many
+SELECT 
+  l.id,
+  l.original_url,
+  l.name,
+  l.created_at,
+  COALESCE(COUNT(t.id), 0) AS transitions_count
+FROM links l
+LEFT JOIN transitions t ON t.link_id = l.id
+WHERE l.user_id = $1
+GROUP BY l.id
+ORDER BY l.created_at DESC;
+
+-- name: SearchLinksSummaryByName :many
+SELECT 
+  l.id,
+  l.original_url,
+  l.name,
+  l.created_at,
+  COALESCE(COUNT(t.id), 0) AS transitions_count
+FROM links l
+LEFT JOIN transitions t ON t.link_id = l.id
+WHERE l.user_id = $1 AND l.name ILIKE '%' || $2 || '%'
+GROUP BY l.id
+ORDER BY l.created_at DESC;
+
 -- name: CreateQRCode :one
 INSERT INTO qr_codes (
   link_id,
