@@ -33,7 +33,15 @@ func GeneratePNG(url, colorHex, bgHex string, smoothing float64) ([]byte, error)
 		bg = "FFFFFF"
 	}
 
-	qr, err := gqr.NewWith(
+    radius := smoothing
+    if radius < 0 {
+        radius = 0
+    }
+    if radius > 0.5 {
+        radius = 0.5
+    }
+
+    qr, err := gqr.NewWith(
 		url,
 		gqr.WithErrorCorrectionLevel(gqr.ErrorCorrectionHighest),
 		gqr.WithEncodingMode(gqr.EncModeAuto),
@@ -42,14 +50,15 @@ func GeneratePNG(url, colorHex, bgHex string, smoothing float64) ([]byte, error)
 		return nil, fmt.Errorf("failed to create qr matrix: %w", err)
 	}
 
-	exp := export.NewExporter(
+    exp := export.NewExporter(
 		export.WithImageSize(1024),
 		export.WithQuietZone(48),
 		export.WithModuleGap(0.14),
 		export.WithBgColorHex("#"+bg),
 
-		export.WithModuleShape(shapes.RoundedModuleShape(0.25, true)),
-		export.WithFinderShape(shapes.RoundedFinderShape(0.5)),
+        // apply smoothing to rounded corners
+        export.WithModuleShape(shapes.RoundedModuleShape(radius, true)),
+        export.WithFinderShape(shapes.RoundedFinderShape(radius)),
 
 		export.WithGradient(
 			export.GradientDirectionLTR,

@@ -36,7 +36,7 @@
                 </svg>
               </span>
             </button>
-            <button class="icon" title="Настройки QR" @click="editQR(it)">
+            <button type="button" class="icon" title="Настройки QR" @click.stop="editQR(it)">
               <span class="i" aria-hidden="true">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                   <circle cx="12" cy="12" r="3"></circle>
@@ -95,10 +95,7 @@ function previewQR(it) {
   window.open(`/api/v1/links/${it.id}/download?type=png`, '_blank')
 }
 
-function editQR(it) {
-  // Навигация/заглушка под страницу настройки
-  // console.log('edit qr', it)
-}
+function editQR(it) { router.push(`/links/${it.id}/edit`) }
 
 onMounted(fetchLinks)
 </script>
