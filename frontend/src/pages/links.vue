@@ -87,10 +87,7 @@ function onAdd() { router.push('/links/new') }
 
 function openAnalytics(it) { router.push(`/links/${it.id}/analytics`) }
 
-function previewQR(it) {
-  // Открыть скачивание PNG текущего QR как предпросмотр
-  window.open(`/api/v1/links/${it.id}/download?type=png`, '_blank')
-}
+function previewQR(it) { router.push(`/links/${it.id}/download`) }
 
 function editQR(it) { router.push(`/links/${it.id}/edit`) }
 
