@@ -3,6 +3,7 @@ import Login from '../pages/login.vue'
 import Links from '../pages/links.vue'
 import NewLink from '../pages/new-link.vue'
 import EditQR from '../pages/edit-qr.vue'
+import Analytics from '../pages/analytics.vue'
 
 const routes = [
   { path: '/', redirect: '/links' },
@@ -10,6 +11,7 @@ const routes = [
   { path: '/links', component: Links },
   { path: '/links/new', component: NewLink }
   ,{ path: '/links/:id/edit', component: EditQR }
+  ,{ path: '/links/:id/analytics', component: Analytics }
 ]
 
 const router = createRouter({

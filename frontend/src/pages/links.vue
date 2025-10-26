@@ -85,10 +85,7 @@ async function fetchLinks() {
 
 function onAdd() { router.push('/links/new') }
 
-function openAnalytics(it) {
-  // Навигация/заглушка под страницу аналитики
-  // console.log('analytics', it)
-}
+function openAnalytics(it) { router.push(`/links/${it.id}/analytics`) }
 
 function previewQR(it) {
   // Открыть скачивание PNG текущего QR как предпросмотр
