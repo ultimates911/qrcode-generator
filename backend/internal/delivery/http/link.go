@@ -74,6 +74,9 @@ func (h *LinkHandler) CreateLink(c *fiber.Ctx) error {
 // @Description Get all links created by the authenticated user
 // @Tags links
 // @Produce  json
+// @Param   search  query  string  false  "Filter by link name (case-insensitive)"
+// @Param   sort_by  query  string  false  "Sort by: created_at|transitions"
+// @Param   order    query  string  false  "Sort order: asc|desc"
 // @Success 200 {object} dto.GetAllLinksResponse
 // @Failure 401 {object} dto.GenericError
 // @Failure 500 {object} dto.GenericError
@@ -90,11 +93,30 @@ func (h *LinkHandler) GetAllLinks(c *fiber.Ctx) error {
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": "Internal server error"})
 	}
 
-	resp, err := h.linkUseCase.GetAllLinks(c.Context(), userID)
+	search := c.Query("search")
+	sortBy := c.Query("sort_by")
+	order := c.Query("order")
+	var resp *dto.GetAllLinksResponse
+	if search != "" {
+		resp, err = h.linkUseCase.SearchLinksByName(c.Context(), userID, search)
+	} else {
+		resp, err = h.linkUseCase.GetAllLinks(c.Context(), userID)
+	}
 	if err != nil {
 		c.Locals("logError", err)
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": "Internal server error"})
 	}
+
+	// apply sorting in usecase layer helper
+	by := usecase.SortByCreatedAt
+	if sortBy == "transitions" {
+		by = usecase.SortByTransitions
+	}
+	ord := usecase.SortDesc
+	if order == "asc" {
+		ord = usecase.SortAsc
+	}
+	resp.Links = h.linkUseCase.SortLinks(resp.Links, by, ord)
 
 	return c.Status(fiber.StatusOK).JSON(resp)
 }

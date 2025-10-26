@@ -6,6 +6,7 @@ import (
 	"encoding/base64"
 	"errors"
 	"fmt"
+	"sort"
 	"time"
 
 	"github.com/rs/zerolog/log"
@@ -140,7 +141,7 @@ func (uc *LinkUseCase) GetLinkByID(ctx context.Context, linkID int64, userID int
 }
 
 func (uc *LinkUseCase) GetAllLinks(ctx context.Context, userID int64) (*dto.GetAllLinksResponse, error) {
-	links, err := uc.repo.GetLinksByUserID(ctx, userID)
+	links, err := uc.repo.GetLinksSummaryByUser(ctx, userID)
 	if err != nil {
 		if errors.Is(err, pgx.ErrNoRows) {
 			return &dto.GetAllLinksResponse{
@@ -153,17 +154,67 @@ func (uc *LinkUseCase) GetAllLinks(ctx context.Context, userID int64) (*dto.GetA
 
 	linkInfos := make([]dto.LinkInfo, len(links))
 	for i, link := range links {
-		linkInfos[i] = dto.LinkInfo{
-			ID:          link.ID,
-			OriginalURL: link.OriginalUrl,
-			Name:        link.Name,
-		}
+		linkInfos[i] = dto.LinkInfo{ID: link.ID, OriginalURL: link.OriginalUrl, Name: link.Name, CreatedAt: link.CreatedAt, Transitions: link.TransitionsCount}
 	}
 
 	return &dto.GetAllLinksResponse{
 		Links:   linkInfos,
 		Message: "Success get all links by user",
 	}, nil
+}
+
+func (uc *LinkUseCase) SearchLinksByName(ctx context.Context, userID int64, search string) (*dto.GetAllLinksResponse, error) {
+	rows, err := uc.repo.SearchLinksSummaryByName(ctx, userID, search)
+	if err != nil {
+		if errors.Is(err, pgx.ErrNoRows) {
+			return &dto.GetAllLinksResponse{Links: []dto.LinkInfo{}, Message: "Success get all links by user"}, nil
+		}
+		return nil, fmt.Errorf("failed to search links by name: %w", err)
+	}
+
+	linkInfos := make([]dto.LinkInfo, len(rows))
+	for i, link := range rows {
+		linkInfos[i] = dto.LinkInfo{ID: link.ID, OriginalURL: link.OriginalUrl, Name: link.Name, CreatedAt: link.CreatedAt, Transitions: link.TransitionsCount}
+	}
+	return &dto.GetAllLinksResponse{Links: linkInfos, Message: "Success get all links by user"}, nil
+}
+
+type LinkSortBy string
+
+const (
+	SortByCreatedAt   LinkSortBy = "created_at"
+	SortByTransitions LinkSortBy = "transitions"
+)
+
+type SortOrder string
+
+const (
+	SortAsc  SortOrder = "asc"
+	SortDesc SortOrder = "desc"
+)
+
+func (uc *LinkUseCase) SortLinks(items []dto.LinkInfo, by LinkSortBy, order SortOrder) []dto.LinkInfo {
+	sorter := func(i, j int) bool { return items[i].CreatedAt.After(items[j].CreatedAt) }
+	switch by {
+	case SortByTransitions:
+		sorter = func(i, j int) bool {
+			if order == SortAsc {
+				return items[i].Transitions < items[j].Transitions
+			}
+			return items[i].Transitions > items[j].Transitions
+		}
+	case SortByCreatedAt:
+		fallthrough
+	default:
+		sorter = func(i, j int) bool {
+			if order == SortAsc {
+				return items[i].CreatedAt.Before(items[j].CreatedAt)
+			}
+			return items[i].CreatedAt.After(items[j].CreatedAt)
+		}
+	}
+	sort.Slice(items, sorter)
+	return items
 }
 
 func (uc *LinkUseCase) EditLink(ctx context.Context, linkID int64, userID int64, req dto.EditLinkRequest) (*dto.EditLinkResponse, error) {
