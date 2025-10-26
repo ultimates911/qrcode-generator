@@ -4,6 +4,7 @@ import Links from '../pages/links.vue'
 import NewLink from '../pages/new-link.vue'
 import EditQR from '../pages/edit-qr.vue'
 import Analytics from '../pages/analytics.vue'
+import DownloadQR from '../pages/download-qr.vue'
 
 const routes = [
   { path: '/', redirect: '/links' },
@@ -12,6 +13,7 @@ const routes = [
   { path: '/links/new', component: NewLink }
   ,{ path: '/links/:id/edit', component: EditQR }
   ,{ path: '/links/:id/analytics', component: Analytics }
+  ,{ path: '/links/:id/download', component: DownloadQR }
 ]
 
 const router = createRouter({
