@@ -14,21 +14,23 @@ const createLink = `-- name: CreateLink :one
 INSERT INTO links (
   original_url,
   hash,
-  user_id
+  user_id,
+  name
 ) VALUES (
-  $1, $2, $3
+  $1, $2, $3, $4
 )
-RETURNING id, original_url, hash, created_at, updated_at, user_id
+RETURNING id, original_url, hash, created_at, updated_at, user_id, name
 `
 
 type CreateLinkParams struct {
 	OriginalUrl string `json:"original_url"`
 	Hash        string `json:"hash"`
 	UserID      int64  `json:"user_id"`
+	Name        string `json:"name"`
 }
 
 func (q *Queries) CreateLink(ctx context.Context, arg CreateLinkParams) (Link, error) {
-	row := q.db.QueryRow(ctx, createLink, arg.OriginalUrl, arg.Hash, arg.UserID)
+	row := q.db.QueryRow(ctx, createLink, arg.OriginalUrl, arg.Hash, arg.UserID, arg.Name)
 	var i Link
 	err := row.Scan(
 		&i.ID,
@@ -37,6 +39,7 @@ func (q *Queries) CreateLink(ctx context.Context, arg CreateLinkParams) (Link, e
 		&i.CreatedAt,
 		&i.UpdatedAt,
 		&i.UserID,
+		&i.Name,
 	)
 	return i, err
 }
@@ -122,6 +125,7 @@ SELECT
     l.hash,
     l.created_at,
     l.updated_at,
+    l.name,
     qc.color,
     qc.background,
     qc.smoothing
@@ -144,6 +148,7 @@ type GetLinkAndQRCodeByIDRow struct {
 	Hash        string    `json:"hash"`
 	CreatedAt   time.Time `json:"created_at"`
 	UpdatedAt   time.Time `json:"updated_at"`
+	Name        string    `json:"name"`
 	Color       string    `json:"color"`
 	Background  string    `json:"background"`
 	Smoothing   *float64  `json:"smoothing"`
@@ -158,6 +163,7 @@ func (q *Queries) GetLinkAndQRCodeByID(ctx context.Context, arg GetLinkAndQRCode
 		&i.Hash,
 		&i.CreatedAt,
 		&i.UpdatedAt,
+		&i.Name,
 		&i.Color,
 		&i.Background,
 		&i.Smoothing,
@@ -166,7 +172,7 @@ func (q *Queries) GetLinkAndQRCodeByID(ctx context.Context, arg GetLinkAndQRCode
 }
 
 const getLinkByHash = `-- name: GetLinkByHash :one
-SELECT id, original_url, hash, created_at, updated_at, user_id FROM links
+SELECT id, original_url, hash, created_at, updated_at, user_id, name FROM links
 WHERE hash = $1 LIMIT 1
 `
 
@@ -180,18 +186,20 @@ func (q *Queries) GetLinkByHash(ctx context.Context, hash string) (Link, error) 
 		&i.CreatedAt,
 		&i.UpdatedAt,
 		&i.UserID,
+		&i.Name,
 	)
 	return i, err
 }
 
 const getLinksByUserID = `-- name: GetLinksByUserID :many
-SELECT id, original_url FROM links
+SELECT id, original_url, name FROM links
 WHERE user_id = $1
 `
 
 type GetLinksByUserIDRow struct {
 	ID          int64  `json:"id"`
 	OriginalUrl string `json:"original_url"`
+	Name        string `json:"name"`
 }
 
 func (q *Queries) GetLinksByUserID(ctx context.Context, userID int64) ([]GetLinksByUserIDRow, error) {
@@ -203,7 +211,7 @@ func (q *Queries) GetLinksByUserID(ctx context.Context, userID int64) ([]GetLink
 	var items []GetLinksByUserIDRow
 	for rows.Next() {
 		var i GetLinksByUserIDRow
-		if err := rows.Scan(&i.ID, &i.OriginalUrl); err != nil {
+		if err := rows.Scan(&i.ID, &i.OriginalUrl, &i.Name); err != nil {
 			return nil, err
 		}
 		items = append(items, i)

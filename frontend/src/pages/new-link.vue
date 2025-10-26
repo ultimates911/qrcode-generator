@@ -3,6 +3,7 @@
     <h2 class="title">Добавление ссылки</h2>
 
     <form class="form" @submit.prevent="submit">
+      <input class="input" v-model.trim="name" type="text" required placeholder="Название" />
       <input class="input" v-model.trim="url" type="url" required placeholder="Ссылка" />
 
       <p v-if="error" class="error">{{ error }}</p>
@@ -19,6 +20,7 @@ import { ref } from 'vue'
 import { useRouter } from 'vue-router'
 
 const router = useRouter()
+const name = ref('')
 const url = ref('')
 const error = ref(null)
 const loading = ref(false)
@@ -32,7 +34,7 @@ async function submit() {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       credentials: 'include',
-      body: JSON.stringify({ original_url: url.value }),
+      body: JSON.stringify({ original_url: url.value, name: name.value }),
     })
     if (!res.ok) {
       if (res.status === 401) {
