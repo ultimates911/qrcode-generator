@@ -110,13 +110,7 @@ async function handleLogin() {
       return
     }
 
-    const data = await res.json()
-    
-    if (data.token) {
-      document.cookie = `jwt_token=${data.token}; path=/; max-age=${7 * 24 * 60 * 60}`
-    }
-
-    router.push('/dashboard')
+    router.push('/links')
     
   } catch (err) {
     console.error('Login error:', err)
