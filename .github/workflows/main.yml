@@ -11,12 +11,77 @@ env:
   BRANCH: main
 
 jobs:
-  deploy:
+  check_ssh:
     runs-on: ubuntu-latest
     concurrency:
       group: qrcode-deploy-${{ github.ref }}
       cancel-in-progress: true
+    steps:
+    - name: Prepare SSH
+      run: |
+        mkdir -p ~/.ssh
+        echo "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/id_rsa
+        chmod 600 ~/.ssh/id_rsa
+        ssh-keyscan -H ${{ secrets.VM_HOST }} >> ~/.ssh/known_hosts 2>/dev/null || true
+    - name: Verify SSH connectivity
+      env:
+        VM_HOST: ${{ secrets.VM_HOST }}
+        VM_USER: ${{ secrets.VM_USER }}
+      run: |
+        ssh -o StrictHostKeyChecking=yes ${VM_USER}@${VM_HOST} "echo SSH_OK"
 
+  migrate_db:
+    runs-on: ubuntu-latest
+    needs: check_ssh
+    concurrency:
+      group: qrcode-deploy-${{ github.ref }}
+      cancel-in-progress: true
+    steps:
+    - name: Prepare SSH
+      run: |
+        mkdir -p ~/.ssh
+        echo "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/id_rsa
+        chmod 600 ~/.ssh/id_rsa
+        ssh-keyscan -H ${{ secrets.VM_HOST }} >> ~/.ssh/known_hosts 2>/dev/null || true
+    - name: Run DB migrations on VM
+      env:
+        VM_HOST: ${{ secrets.VM_HOST }}
+        VM_USER: ${{ secrets.VM_USER }}
+      run: |
+        ssh -o StrictHostKeyChecking=yes ${VM_USER}@${VM_HOST} << EOF
+          set -euo pipefail
+
+          sudo mkdir -p ${DEPLOY_PATH}
+          sudo chown -R \$USER:\$USER ${DEPLOY_PATH}
+          cd ${DEPLOY_PATH}
+
+          if [ -d .git ]; then
+            git fetch origin ${BRANCH}
+            git reset --hard origin/${BRANCH}
+          else
+            git clone --depth 1 -b ${BRANCH} ${REPO_URL} .
+          fi
+
+          if docker compose version >/dev/null 2>&1; then
+            DC="docker compose"
+          else
+            DC="docker-compose"
+          fi
+
+          # Ensure database is up (uses healthcheck)
+          \$DC up -d db
+          # Build migration image
+          \$DC build migrate
+          # Run migrations once
+          \$DC run --rm migrate
+        EOF
+
+  deploy:
+    runs-on: ubuntu-latest
+    needs: migrate_db
+    concurrency:
+      group: qrcode-deploy-${{ github.ref }}
+      cancel-in-progress: true
     steps:
     - name: Prepare SSH
       run: |
@@ -52,5 +117,4 @@ jobs:
 
           \$DC down || true
           \$DC up -d --build --remove-orphans
-          \$DC ps
         EOF
