@@ -83,11 +83,7 @@ async function fetchLinks() {
   }
 }
 
-function onAdd() {
-  // Заглушка: позже можно открыть модал для создания ссылки
-  // Пока просто навигируем на форму если появится
-  // alert('Добавление ссылки в разработке')
-}
+function onAdd() { router.push('/links/new') }
 
 function openAnalytics(it) {
   // Навигация/заглушка под страницу аналитики
