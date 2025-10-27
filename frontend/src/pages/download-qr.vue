@@ -96,7 +96,7 @@ onMounted(fetchLink)
 <style scoped>
 .download { max-width: 980px; margin: 60px auto; padding: 0 16px; text-align: center; }
 .title { margin: 0; color: #2b3b45; font-weight: 600; }
-.accent { color: #4b79a1; }
+.accent { color: #6c8c8c; }
 .subtitle { color: #6a7a86; margin: 8px 0 24px; }
 .state { margin: 24px 0; }
 .muted { color: #8b98a1; }
@@ -112,7 +112,7 @@ onMounted(fetchLink)
 .label { color: #2b3b45; font-weight: 600; }
 .buttons { display: flex; gap: 14px; }
 .primary, .ghost { border: 1px solid transparent; border-radius: 10px; padding: 10px 22px; cursor: pointer; }
-.primary { background: #4b79a1; color: #fff; }
+.primary { background: #6c8c8c; color: #fff; }
 .primary:hover { transform: translateY(-1px); box-shadow: 0 6px 14px rgba(75,121,161,.25); }
 .ghost { background: #f3f5f7; color: #3a4a56; border-color: #e3e9ee; }
 .ghost:hover { background: #eef2f7; transform: translateY(-1px); }
