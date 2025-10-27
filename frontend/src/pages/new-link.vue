@@ -77,7 +77,7 @@ async function submit() {
 .error { color: #c54747; margin: 4px 0 0; }
 
 .submit {
-  background: #4b79a1;
+  background: #6c8c8c;
   color: #fff;
   border: none;
   border-radius: 8px;
