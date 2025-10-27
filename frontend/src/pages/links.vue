@@ -152,7 +152,7 @@ function formatDate(s) {
 }
 h2 {
   margin: 0;
-  color: #4b6576;
+  color: #6c8c8c;
   font-weight: 600;
 }
 .add-btn {
@@ -190,7 +190,7 @@ h2 {
 .table thead th { font-weight: 600; color: #2e3a44; background: #f8fafb; }
 .table tbody tr:hover { background: #f9fbfd; }
 .sortable { cursor: pointer; user-select: none; }
-.sort { margin-left: 6px; color: #3a6a95; }
+.sort { margin-left: 6px; color: #6c8c8c; }
 .name { font-weight: 600; color: #2e3a44; max-width: 280px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .cnt { width: 140px; }
 .url {
