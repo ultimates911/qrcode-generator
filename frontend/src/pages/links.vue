@@ -156,7 +156,7 @@ h2 {
   font-weight: 600;
 }
 .add-btn {
-  background: #4b79a1;
+  background: #6c8c8c;
   color: #fff;
   border: none;
   border-radius: 8px;
@@ -167,12 +167,23 @@ h2 {
 .add-btn:hover {
   transform: translateY(-1px);
   box-shadow: 0 6px 14px rgba(75, 121, 161, .25);
-  background: linear-gradient(135deg, #4b79a1 0%, #3a6a95 100%);
+  background: linear-gradient(135deg, #6c8c8c 0%, #6c8c8c 100%);
 }
-.state { margin: 24px 0; }
-.muted { color: #8b98a1; }
+.state { margin: 24px 0;}
+.muted { color: #666; }
 .error { color: #c54747; }
-.empty { margin-top: 40px; }
+.empty { margin-top: 40px; color: #6c8c8c; }
+
+.empty a {
+  color: #7c81a2;
+  text-decoration: aquamarine;
+  transition: color 0.2s ease;
+}
+
+.empty a:hover {
+  color: #5a7a7a; 
+  text-decoration: underline;
+}
 
 .table { width: 100%; border-collapse: collapse; }
 .table th, .table td { padding: 10px 12px; border-bottom: 1px solid #edf0f2; text-align: left; }
