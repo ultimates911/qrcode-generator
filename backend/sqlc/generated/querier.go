@@ -13,14 +13,17 @@ type Querier interface {
 	CreateQRCode(ctx context.Context, arg CreateQRCodeParams) (QrCode, error)
 	CreateTransition(ctx context.Context, arg CreateTransitionParams) error
 	CreateUser(ctx context.Context, arg CreateUserParams) (User, error)
+	DeleteLink(ctx context.Context, arg DeleteLinkParams) (int64, error)
+	DeleteQRCodeByLinkID(ctx context.Context, linkID int64) error
+	DeleteTransitionsByLinkID(ctx context.Context, linkID int64) error
 	GetLinkAndQRCodeByID(ctx context.Context, arg GetLinkAndQRCodeByIDParams) (GetLinkAndQRCodeByIDRow, error)
 	GetLinkByHash(ctx context.Context, hash string) (Link, error)
 	GetLinksByUserID(ctx context.Context, userID int64) ([]GetLinksByUserIDRow, error)
-	SearchLinksByName(ctx context.Context, userID int64, search string) ([]SearchLinksByNameRow, error)
 	GetLinksSummaryByUser(ctx context.Context, userID int64) ([]GetLinksSummaryByUserRow, error)
-	SearchLinksSummaryByName(ctx context.Context, userID int64, search string) ([]SearchLinksSummaryByNameRow, error)
 	GetTransitionsByLinkID(ctx context.Context, arg GetTransitionsByLinkIDParams) ([]GetTransitionsByLinkIDRow, error)
 	GetUserByEmail(ctx context.Context, email string) (User, error)
+	SearchLinksByName(ctx context.Context, arg SearchLinksByNameParams) ([]SearchLinksByNameRow, error)
+	SearchLinksSummaryByName(ctx context.Context, arg SearchLinksSummaryByNameParams) ([]SearchLinksSummaryByNameRow, error)
 	UpdateLinkURL(ctx context.Context, arg UpdateLinkURLParams) (int64, error)
 	UpdateQRCodeParams(ctx context.Context, arg UpdateQRCodeParamsParams) error
 }

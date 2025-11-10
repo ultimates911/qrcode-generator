@@ -154,7 +154,8 @@ func (uc *LinkUseCase) GetAllLinks(ctx context.Context, userID int64) (*dto.GetA
 
 	linkInfos := make([]dto.LinkInfo, len(links))
 	for i, link := range links {
-		linkInfos[i] = dto.LinkInfo{ID: link.ID, OriginalURL: link.OriginalUrl, Name: link.Name, CreatedAt: link.CreatedAt, Transitions: link.TransitionsCount}
+		transitionsCount, _ := link.TransitionsCount.(int64)
+		linkInfos[i] = dto.LinkInfo{ID: link.ID, OriginalURL: link.OriginalUrl, Name: link.Name, CreatedAt: link.CreatedAt, Transitions: transitionsCount}
 	}
 
 	return &dto.GetAllLinksResponse{
@@ -164,7 +165,11 @@ func (uc *LinkUseCase) GetAllLinks(ctx context.Context, userID int64) (*dto.GetA
 }
 
 func (uc *LinkUseCase) SearchLinksByName(ctx context.Context, userID int64, search string) (*dto.GetAllLinksResponse, error) {
-	rows, err := uc.repo.SearchLinksSummaryByName(ctx, userID, search)
+	params := sqldb.SearchLinksSummaryByNameParams{
+		UserID:  userID,
+		Column2: &search,
+	}
+	rows, err := uc.repo.SearchLinksSummaryByName(ctx, params)
 	if err != nil {
 		if errors.Is(err, pgx.ErrNoRows) {
 			return &dto.GetAllLinksResponse{Links: []dto.LinkInfo{}, Message: "Success get all links by user"}, nil
@@ -174,7 +179,8 @@ func (uc *LinkUseCase) SearchLinksByName(ctx context.Context, userID int64, sear
 
 	linkInfos := make([]dto.LinkInfo, len(rows))
 	for i, link := range rows {
-		linkInfos[i] = dto.LinkInfo{ID: link.ID, OriginalURL: link.OriginalUrl, Name: link.Name, CreatedAt: link.CreatedAt, Transitions: link.TransitionsCount}
+		transitionsCount, _ := link.TransitionsCount.(int64)
+		linkInfos[i] = dto.LinkInfo{ID: link.ID, OriginalURL: link.OriginalUrl, Name: link.Name, CreatedAt: link.CreatedAt, Transitions: transitionsCount}
 	}
 	return &dto.GetAllLinksResponse{Links: linkInfos, Message: "Success get all links by user"}, nil
 }
@@ -362,4 +368,44 @@ func (uc *LinkUseCase) GetTransitions(ctx context.Context, linkID, userID int64)
 	}
 
 	return &dto.GetTransitionsResponse{Transitions: items}, nil
+}
+
+func (uc *LinkUseCase) DeleteLink(ctx context.Context, linkID int64, userID int64) error {
+	tx, err := uc.repo.BeginTx(ctx)
+	if err != nil {
+		return fmt.Errorf("failed to begin transaction: %w", err)
+	}
+	defer tx.Rollback(ctx)
+
+	repoWithTx := uc.repo.WithTX(tx)
+
+	_, err = repoWithTx.GetLinkAndQRCodeByID(ctx, sqldb.GetLinkAndQRCodeByIDParams{ID: linkID, UserID: userID})
+	if err != nil {
+		if errors.Is(err, pgx.ErrNoRows) {
+			return ErrLinkNotFound
+		}
+		return fmt.Errorf("failed to verify link ownership: %w", err)
+	}
+
+	if err := repoWithTx.DeleteTransitionsByLinkID(ctx, linkID); err != nil {
+		return fmt.Errorf("failed to delete transitions: %w", err)
+	}
+
+	if err := repoWithTx.DeleteQRCodeByLinkID(ctx, linkID); err != nil {
+		return fmt.Errorf("failed to delete qr code: %w", err)
+	}
+
+	rowsAffected, err := repoWithTx.DeleteLink(ctx, sqldb.DeleteLinkParams{ID: linkID, UserID: userID})
+	if err != nil {
+		return fmt.Errorf("failed to delete link: %w", err)
+	}
+	if rowsAffected == 0 {
+		return ErrLinkNotFound
+	}
+
+	if err := tx.Commit(ctx); err != nil {
+		return fmt.Errorf("failed to commit transaction: %w", err)
+	}
+
+	return nil
 }

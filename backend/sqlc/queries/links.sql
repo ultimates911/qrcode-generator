@@ -120,3 +120,12 @@ FROM transitions t
 JOIN links l ON l.id = t.link_id
 WHERE t.link_id = $1 AND l.user_id = $2
 ORDER BY t.created_at DESC;
+
+-- name: DeleteTransitionsByLinkID :exec
+DELETE FROM transitions WHERE link_id = $1;
+
+-- name: DeleteQRCodeByLinkID :exec
+DELETE FROM qr_codes WHERE link_id = $1;
+
+-- name: DeleteLink :execrows
+DELETE FROM links WHERE id = $1 AND user_id = $2;

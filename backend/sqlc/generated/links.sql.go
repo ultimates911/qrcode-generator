@@ -30,7 +30,12 @@ type CreateLinkParams struct {
 }
 
 func (q *Queries) CreateLink(ctx context.Context, arg CreateLinkParams) (Link, error) {
-	row := q.db.QueryRow(ctx, createLink, arg.OriginalUrl, arg.Hash, arg.UserID, arg.Name)
+	row := q.db.QueryRow(ctx, createLink,
+		arg.OriginalUrl,
+		arg.Hash,
+		arg.UserID,
+		arg.Name,
+	)
 	var i Link
 	err := row.Scan(
 		&i.ID,
@@ -115,6 +120,41 @@ func (q *Queries) CreateTransition(ctx context.Context, arg CreateTransitionPara
 		arg.Browser,
 		arg.Os,
 	)
+	return err
+}
+
+const deleteLink = `-- name: DeleteLink :execrows
+DELETE FROM links WHERE id = $1 AND user_id = $2
+`
+
+type DeleteLinkParams struct {
+	ID     int64 `json:"id"`
+	UserID int64 `json:"user_id"`
+}
+
+func (q *Queries) DeleteLink(ctx context.Context, arg DeleteLinkParams) (int64, error) {
+	result, err := q.db.Exec(ctx, deleteLink, arg.ID, arg.UserID)
+	if err != nil {
+		return 0, err
+	}
+	return result.RowsAffected(), nil
+}
+
+const deleteQRCodeByLinkID = `-- name: DeleteQRCodeByLinkID :exec
+DELETE FROM qr_codes WHERE link_id = $1
+`
+
+func (q *Queries) DeleteQRCodeByLinkID(ctx context.Context, linkID int64) error {
+	_, err := q.db.Exec(ctx, deleteQRCodeByLinkID, linkID)
+	return err
+}
+
+const deleteTransitionsByLinkID = `-- name: DeleteTransitionsByLinkID :exec
+DELETE FROM transitions WHERE link_id = $1
+`
+
+func (q *Queries) DeleteTransitionsByLinkID(ctx context.Context, linkID int64) error {
+	_, err := q.db.Exec(ctx, deleteTransitionsByLinkID, linkID)
 	return err
 }
 
@@ -222,27 +262,44 @@ func (q *Queries) GetLinksByUserID(ctx context.Context, userID int64) ([]GetLink
 	return items, nil
 }
 
-const searchLinksByName = `-- name: SearchLinksByName :many
-SELECT id, original_url, name FROM links
-WHERE user_id = $1 AND name ILIKE '%' || $2 || '%'
+const getLinksSummaryByUser = `-- name: GetLinksSummaryByUser :many
+SELECT 
+  l.id,
+  l.original_url,
+  l.name,
+  l.created_at,
+  COALESCE(COUNT(t.id), 0) AS transitions_count
+FROM links l
+LEFT JOIN transitions t ON t.link_id = l.id
+WHERE l.user_id = $1
+GROUP BY l.id
+ORDER BY l.created_at DESC
 `
 
-type SearchLinksByNameRow struct {
-	ID          int64  `json:"id"`
-	OriginalUrl string `json:"original_url"`
-	Name        string `json:"name"`
+type GetLinksSummaryByUserRow struct {
+	ID               int64       `json:"id"`
+	OriginalUrl      string      `json:"original_url"`
+	Name             string      `json:"name"`
+	CreatedAt        time.Time   `json:"created_at"`
+	TransitionsCount interface{} `json:"transitions_count"`
 }
 
-func (q *Queries) SearchLinksByName(ctx context.Context, userID int64, search string) ([]SearchLinksByNameRow, error) {
-	rows, err := q.db.Query(ctx, searchLinksByName, userID, search)
+func (q *Queries) GetLinksSummaryByUser(ctx context.Context, userID int64) ([]GetLinksSummaryByUserRow, error) {
+	rows, err := q.db.Query(ctx, getLinksSummaryByUser, userID)
 	if err != nil {
 		return nil, err
 	}
 	defer rows.Close()
-	var items []SearchLinksByNameRow
+	var items []GetLinksSummaryByUserRow
 	for rows.Next() {
-		var i SearchLinksByNameRow
-		if err := rows.Scan(&i.ID, &i.OriginalUrl, &i.Name); err != nil {
+		var i GetLinksSummaryByUserRow
+		if err := rows.Scan(
+			&i.ID,
+			&i.OriginalUrl,
+			&i.Name,
+			&i.CreatedAt,
+			&i.TransitionsCount,
+		); err != nil {
 			return nil, err
 		}
 		items = append(items, i)
@@ -314,6 +371,95 @@ func (q *Queries) GetTransitionsByLinkID(ctx context.Context, arg GetTransitions
 	return items, nil
 }
 
+const searchLinksByName = `-- name: SearchLinksByName :many
+SELECT id, original_url, name FROM links
+WHERE user_id = $1 AND name ILIKE '%' || $2 || '%'
+`
+
+type SearchLinksByNameParams struct {
+	UserID  int64   `json:"user_id"`
+	Column2 *string `json:"column_2"`
+}
+
+type SearchLinksByNameRow struct {
+	ID          int64  `json:"id"`
+	OriginalUrl string `json:"original_url"`
+	Name        string `json:"name"`
+}
+
+func (q *Queries) SearchLinksByName(ctx context.Context, arg SearchLinksByNameParams) ([]SearchLinksByNameRow, error) {
+	rows, err := q.db.Query(ctx, searchLinksByName, arg.UserID, arg.Column2)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []SearchLinksByNameRow
+	for rows.Next() {
+		var i SearchLinksByNameRow
+		if err := rows.Scan(&i.ID, &i.OriginalUrl, &i.Name); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const searchLinksSummaryByName = `-- name: SearchLinksSummaryByName :many
+SELECT 
+  l.id,
+  l.original_url,
+  l.name,
+  l.created_at,
+  COALESCE(COUNT(t.id), 0) AS transitions_count
+FROM links l
+LEFT JOIN transitions t ON t.link_id = l.id
+WHERE l.user_id = $1 AND l.name ILIKE '%' || $2 || '%'
+GROUP BY l.id
+ORDER BY l.created_at DESC
+`
+
+type SearchLinksSummaryByNameParams struct {
+	UserID  int64   `json:"user_id"`
+	Column2 *string `json:"column_2"`
+}
+
+type SearchLinksSummaryByNameRow struct {
+	ID               int64       `json:"id"`
+	OriginalUrl      string      `json:"original_url"`
+	Name             string      `json:"name"`
+	CreatedAt        time.Time   `json:"created_at"`
+	TransitionsCount interface{} `json:"transitions_count"`
+}
+
+func (q *Queries) SearchLinksSummaryByName(ctx context.Context, arg SearchLinksSummaryByNameParams) ([]SearchLinksSummaryByNameRow, error) {
+	rows, err := q.db.Query(ctx, searchLinksSummaryByName, arg.UserID, arg.Column2)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []SearchLinksSummaryByNameRow
+	for rows.Next() {
+		var i SearchLinksSummaryByNameRow
+		if err := rows.Scan(
+			&i.ID,
+			&i.OriginalUrl,
+			&i.Name,
+			&i.CreatedAt,
+			&i.TransitionsCount,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
 const updateLinkURL = `-- name: UpdateLinkURL :execrows
 UPDATE links
 SET
@@ -362,88 +508,4 @@ func (q *Queries) UpdateQRCodeParams(ctx context.Context, arg UpdateQRCodeParams
 		arg.LinkID,
 	)
 	return err
-}
-
-const getLinksSummaryByUser = `-- name: GetLinksSummaryByUser :many
-SELECT 
-  l.id,
-  l.original_url,
-  l.name,
-  l.created_at,
-  COALESCE(COUNT(t.id), 0) AS transitions_count
-FROM links l
-LEFT JOIN transitions t ON t.link_id = l.id
-WHERE l.user_id = $1
-GROUP BY l.id
-ORDER BY l.created_at DESC
-`
-
-type GetLinksSummaryByUserRow struct {
-	ID               int64     `json:"id"`
-	OriginalUrl      string    `json:"original_url"`
-	Name             string    `json:"name"`
-	CreatedAt        time.Time `json:"created_at"`
-	TransitionsCount int64     `json:"transitions_count"`
-}
-
-func (q *Queries) GetLinksSummaryByUser(ctx context.Context, userID int64) ([]GetLinksSummaryByUserRow, error) {
-	rows, err := q.db.Query(ctx, getLinksSummaryByUser, userID)
-	if err != nil {
-		return nil, err
-	}
-	defer rows.Close()
-	var items []GetLinksSummaryByUserRow
-	for rows.Next() {
-		var i GetLinksSummaryByUserRow
-		if err := rows.Scan(&i.ID, &i.OriginalUrl, &i.Name, &i.CreatedAt, &i.TransitionsCount); err != nil {
-			return nil, err
-		}
-		items = append(items, i)
-	}
-	if err := rows.Err(); err != nil {
-		return nil, err
-	}
-	return items, nil
-}
-
-const searchLinksSummaryByName = `-- name: SearchLinksSummaryByName :many
-SELECT 
-  l.id,
-  l.original_url,
-  l.name,
-  l.created_at,
-  COALESCE(COUNT(t.id), 0) AS transitions_count
-FROM links l
-LEFT JOIN transitions t ON t.link_id = l.id
-WHERE l.user_id = $1 AND l.name ILIKE '%' || $2 || '%'
-GROUP BY l.id
-ORDER BY l.created_at DESC
-`
-
-type SearchLinksSummaryByNameRow struct {
-	ID               int64     `json:"id"`
-	OriginalUrl      string    `json:"original_url"`
-	Name             string    `json:"name"`
-	CreatedAt        time.Time `json:"created_at"`
-	TransitionsCount int64     `json:"transitions_count"`
-}
-
-func (q *Queries) SearchLinksSummaryByName(ctx context.Context, userID int64, search string) ([]SearchLinksSummaryByNameRow, error) {
-	rows, err := q.db.Query(ctx, searchLinksSummaryByName, userID, search)
-	if err != nil {
-		return nil, err
-	}
-	defer rows.Close()
-	var items []SearchLinksSummaryByNameRow
-	for rows.Next() {
-		var i SearchLinksSummaryByNameRow
-		if err := rows.Scan(&i.ID, &i.OriginalUrl, &i.Name, &i.CreatedAt, &i.TransitionsCount); err != nil {
-			return nil, err
-		}
-		items = append(items, i)
-	}
-	if err := rows.Err(); err != nil {
-		return nil, err
-	}
-	return items, nil
 }
