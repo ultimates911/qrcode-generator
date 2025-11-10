@@ -6,9 +6,9 @@ import (
 	"qrcodegen/internal/delivery/http"
 	"qrcodegen/internal/delivery/middleware"
 
+	swagger "github.com/clode-labs/gofiber-swagger/v2"
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/fiber/v2/middleware/cors"
-	"github.com/clode-labs/gofiber-swagger/v2"
 )
 
 type Router struct {
@@ -49,6 +49,7 @@ func (r *Router) Register(app *fiber.App) {
 	links.Get("/", r.linkHandler.GetAllLinks)
 	links.Get("/:id<int>", r.linkHandler.GetLink)
 	links.Patch("/:id<int>", r.linkHandler.EditLink)
+	links.Delete("/:id<int>", r.linkHandler.DeleteLink)
 	links.Get("/:id<int>/download", r.linkHandler.DownloadQR)
 	links.Get("/:id<int>/transitions", r.linkHandler.GetTransitionsByLink)
 }

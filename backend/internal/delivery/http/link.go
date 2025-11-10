@@ -279,3 +279,43 @@ func (h *LinkHandler) GetTransitionsByLink(c *fiber.Ctx) error {
 
 	return c.Status(fiber.StatusOK).JSON(resp)
 }
+
+// DeleteLink godoc
+// @Summary Delete a link
+// @Description Delete a specific link by its ID for the authenticated user
+// @Tags links
+// @Param   id   path      int  true  "Link ID"
+// @Success 204 "No Content"
+// @Failure 400 {object} dto.GenericError
+// @Failure 401 {object} dto.GenericError
+// @Failure 404 {object} dto.GenericError
+// @Failure 500 {object} dto.GenericError
+// @Router /links/{id} [delete]
+func (h *LinkHandler) DeleteLink(c *fiber.Ctx) error {
+	linkID, err := c.ParamsInt("id")
+	if err != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "Invalid link ID"})
+	}
+
+	userIDStr, ok := c.Locals("userID").(string)
+	if !ok {
+		return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{"error": "Unauthorized"})
+	}
+
+	userID, err := strconv.ParseInt(userIDStr, 10, 64)
+	if err != nil {
+		c.Locals("logError", err)
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": "Internal server error"})
+	}
+
+	err = h.linkUseCase.DeleteLink(c.Context(), int64(linkID), userID)
+	if err != nil {
+		if errors.Is(err, usecase.ErrLinkNotFound) {
+			return c.Status(fiber.StatusNotFound).JSON(fiber.Map{"error": err.Error()})
+		}
+		c.Locals("logError", err)
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": "Internal server error"})
+	}
+
+	return c.SendStatus(fiber.StatusNoContent)
+}
