@@ -51,7 +51,6 @@
       </div>
     </div>
 
-    <!-- Модальное окно удаления -->
     <div v-if="showModal" class="modal-overlay" @click.self="closeModal">
       <div class="modal">
         <div class="modal-content">
