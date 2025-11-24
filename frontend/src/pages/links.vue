@@ -43,6 +43,7 @@
                 <button class="icon" title="Аналитика" @click="openAnalytics(it)"><span class="i">A</span></button>
                 <button class="icon" title="Просмотр QR" @click="previewQR(it)"><span class="i">QR</span></button>
                 <button type="button" class="icon" title="Настройки QR" @click.stop="editQR(it)"><span class="i">⚙</span></button>
+                <button type="button" class="icon delete" title="Удалить ссылку" @click.stop="deleteLink(it)"><span class="i">🗑</span></button>
               </td>
             </tr>
           </tbody>
@@ -99,6 +100,33 @@ function openAnalytics(it) { router.push(`/links/${it.id}/analytics`) }
 function previewQR(it) { router.push(`/links/${it.id}/download`) }
 
 function editQR(it) { router.push(`/links/${it.id}/edit`) }
+
+async function deleteLink(link) {
+  if (!confirm(`Вы уверены, что хотите удалить ссылку "${link.name || 'Без имени'}"?`)) {
+    return
+  }
+
+  try {
+    const res = await fetch(`/api/v1/links/${link.id}`, {
+      method: 'DELETE',
+      credentials: 'include'
+    })
+
+    if (!res.ok) {
+      let msg = 'Не удалось удалить ссылку'
+      try { 
+        const j = await res.json()
+        if (j?.error) msg = j.error 
+      } catch {}
+      throw new Error(msg)
+    }
+
+    items.value = items.value.filter(item => item.id !== link.id)
+    
+  } catch (e) {
+    alert(e.message || 'Ошибка при удалении')
+  }
+}
 
 onMounted(fetchLinks)
 
@@ -227,7 +255,11 @@ th._w, td._w { width: 140px; }
   border-color: #d5e2f3;
   box-shadow: 0 4px 10px rgba(58,106,149,.15);
 }
+.icon.delete:hover {
+  background: linear-gradient(135deg, #ffeaea 0%, #ffdbdb 100%);
+  border-color: #f3c5c5;
+  box-shadow: 0 4px 10px rgba(149, 58, 58, 0.15);
+}
 .i { display: inline-flex; }
 .i svg { width: 20px; height: 20px; color: #3a6a95; }
 </style>
-
