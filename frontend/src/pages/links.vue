@@ -43,10 +43,25 @@
                 <button class="icon" title="Аналитика" @click="openAnalytics(it)"><span class="i">A</span></button>
                 <button class="icon" title="Просмотр QR" @click="previewQR(it)"><span class="i">QR</span></button>
                 <button type="button" class="icon" title="Настройки QR" @click.stop="editQR(it)"><span class="i">⚙</span></button>
+                <button type="button" class="icon delete" title="Удалить ссылку" @click.stop="showDeleteModal(it)"><span class="i">🗑</span></button>
               </td>
             </tr>
           </tbody>
         </table>
+      </div>
+    </div>
+
+    <!-- Модальное окно удаления -->
+    <div v-if="showModal" class="modal-overlay" @click.self="closeModal">
+      <div class="modal">
+        <div class="modal-content">
+          <h3>Удаление ссылки</h3>
+          <p>Вы точно хотите удалить ссылку "{{ linkToDelete?.name || 'Без имени' }}"?</p>
+          <div class="modal-actions">
+            <button class="cancel-btn" @click="closeModal">Отмена</button>
+            <button class="confirm-delete-btn" @click="confirmDelete">Удалить</button>
+          </div>
+        </div>
       </div>
     </div>
   </div>
@@ -63,6 +78,8 @@ const router = useRouter()
 const search = ref('')
 const sortBy = ref('created_at')
 const sortOrder = ref('desc')
+const showModal = ref(false)
+const linkToDelete = ref(null)
 
 async function fetchLinks() {
   loading.value = true
@@ -99,6 +116,42 @@ function openAnalytics(it) { router.push(`/links/${it.id}/analytics`) }
 function previewQR(it) { router.push(`/links/${it.id}/download`) }
 
 function editQR(it) { router.push(`/links/${it.id}/edit`) }
+
+function showDeleteModal(link) {
+  linkToDelete.value = link
+  showModal.value = true
+}
+
+function closeModal() {
+  showModal.value = false
+  linkToDelete.value = null
+}
+
+async function confirmDelete() {
+  if (!linkToDelete.value) return
+  
+  try {
+    const res = await fetch(`/api/v1/links/${linkToDelete.value.id}`, {
+      method: 'DELETE',
+      credentials: 'include'
+    })
+
+    if (!res.ok) {
+      let msg = 'Не удалось удалить ссылку'
+      try { 
+        const j = await res.json()
+        if (j?.error) msg = j.error 
+      } catch {}
+      throw new Error(msg)
+    }
+
+    items.value = items.value.filter(item => item.id !== linkToDelete.value.id)
+    closeModal()
+  } catch (e) {
+    alert(e.message || 'Ошибка при удалении')
+    closeModal()
+  }
+}
 
 onMounted(fetchLinks)
 
@@ -220,6 +273,7 @@ th._w, td._w { width: 140px; }
   border-radius: 8px;
   cursor: pointer;
   transition: transform .12s ease, background .15s ease, box-shadow .15s ease, border-color .15s ease;
+  font-size: 16px; 
 }
 .icon:hover {
   transform: translateY(-1px);
@@ -227,7 +281,103 @@ th._w, td._w { width: 140px; }
   border-color: #d5e2f3;
   box-shadow: 0 4px 10px rgba(58,106,149,.15);
 }
+
+.icon:nth-child(3) {
+  font-size: 24px;
+}
+.icon.delete {
+  font-size: 24px;
+}
+.icon.delete:hover {
+  background: linear-gradient(135deg, #ffeaea 0%, #ffdbdb 100%);
+  border-color: #f3c5c5;
+  box-shadow: 0 4px 10px rgba(149, 58, 58, 0.15);
+}
 .i { display: inline-flex; }
 .i svg { width: 20px; height: 20px; color: #3a6a95; }
-</style>
 
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(44, 44, 44, 0.6);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+}
+
+.modal {
+  background: #f8fafb;
+  border-radius: 12px;
+  padding: 0;
+  width: 450px;
+  max-width: 90vw;
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.25);
+  border: 1px solid #edf0f2;
+}
+
+.modal-content {
+  padding: 32px;
+}
+
+.modal-content h3 {
+  margin: 0 0 16px 0;
+  color: #2e3a44;
+  font-weight: 600;
+  font-size: 20px;
+}
+
+.modal-content p {
+  margin: 0 0 32px 0;
+  color: #666;
+  line-height: 1.5;
+  font-size: 15px;
+}
+
+.modal-actions {
+  display: flex;
+  gap: 12px;
+  justify-content: flex-end;
+}
+
+.cancel-btn, .confirm-delete-btn {
+  padding: 12px 24px;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 500;
+  transition: transform .15s ease, box-shadow .15s ease, background .2s ease;
+  min-width: 100px;
+}
+
+.cancel-btn {
+  background: #f3f5f7;
+  border: 1px solid #edf0f2;
+  color: #2e3a44;
+}
+
+.cancel-btn:hover {
+  transform: translateY(-1px);
+  background: linear-gradient(135deg, #f7faff 0%, #eef5ff 100%);
+  border-color: #d5e2f3;
+  box-shadow: 0 4px 10px rgba(58,106,149,.15);
+}
+
+.confirm-delete-btn {
+  background: transparent;
+  color: #6c8c8c;
+  border: 1px solid #6c8c8c;
+}
+
+.confirm-delete-btn:hover {
+  transform: translateY(-1px);
+  background: #c54747;
+  color: white;
+  border-color: #c54747;
+  box-shadow: 0 4px 10px rgba(149, 58, 58, 0.25);
+}
+</style>
