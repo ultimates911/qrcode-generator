@@ -248,12 +248,20 @@ th._w, td._w { width: 140px; }
   border-radius: 8px;
   cursor: pointer;
   transition: transform .12s ease, background .15s ease, box-shadow .15s ease, border-color .15s ease;
+  font-size: 16px; /* Увеличиваем базовый размер шрифта для иконок */
 }
 .icon:hover {
   transform: translateY(-1px);
   background: linear-gradient(135deg, #f7faff 0%, #eef5ff 100%);
   border-color: #d5e2f3;
   box-shadow: 0 4px 10px rgba(58,106,149,.15);
+}
+
+.icon:nth-child(3) {
+  font-size: 18px;
+}
+.icon.delete {
+  font-size: 22px;
 }
 .icon.delete:hover {
   background: linear-gradient(135deg, #ffeaea 0%, #ffdbdb 100%);
