@@ -58,15 +58,16 @@ async function fetchLink() {
 }
 
 async function generatePreview() {
-  if (!link.value) return
+  if (!link.value || !link.value.hash) return
   qrLoading.value = true
   try {
+    const redirectUrl = `${window.location.origin}/redirect/${link.value.hash}`
     const res = await fetch('/api/v1/qrcode', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       credentials: 'include',
       body: JSON.stringify({
-        url: link.value.original_url,
+        url: redirectUrl,
         color: link.value.color,
         background: link.value.background,
         smoothing: link.value.smoothing ?? 0,

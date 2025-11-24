@@ -57,6 +57,7 @@ const router = useRouter()
 const linkId = Number(route.params.id)
 
 const url = ref('')
+const hash = ref('')
 const color = ref('000000')
 const background = ref('FFFFFF')
 const smoothing = ref(0.0)
@@ -93,6 +94,7 @@ async function fetchLink() {
     }
     const data = await res.json()
     url.value = data.original_url
+    hash.value = data.hash || ''
     color.value = data.color || color.value
     background.value = data.background || background.value
     smoothing.value = typeof data.smoothing === 'number' ? data.smoothing : 0.0
@@ -103,15 +105,16 @@ async function fetchLink() {
 }
 
 async function generateQR() {
-  if (!url.value) return
+  if (!hash.value) return
   qrLoading.value = true
   error.value = null
   try {
+    const redirectUrl = `${window.location.origin}/redirect/${hash.value}`
     const res = await fetch('/api/v1/qrcode', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       credentials: 'include',
-      body: JSON.stringify({ url: url.value, color: color.value, background: background.value, smoothing: smoothing.value })
+      body: JSON.stringify({ url: redirectUrl, color: color.value, background: background.value, smoothing: smoothing.value })
     })
     if (!res.ok) {
       if (res.status === 401) { router.push('/login'); return }
