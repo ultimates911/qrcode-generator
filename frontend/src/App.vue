@@ -6,7 +6,7 @@
 </template>
 
 <script setup>
-import ThemeToggle from '@/components/ThemeToggle.vue'
+import ThemeToggle from './components/ThemeToggle.vue'
 </script>
 
 <style>
@@ -26,6 +26,10 @@ import ThemeToggle from '@/components/ThemeToggle.vue'
   --shadow-light: rgba(58, 106, 149, 0.15);
   --shadow-dark: rgba(0, 0, 0, 0.1);
   --modal-overlay: rgba(44, 44, 44, 0.6);
+  --icon-bg: var(--bg-tertiary);
+  --icon-hover-bg: linear-gradient(135deg, var(--bg-secondary) 0%, var(--bg-tertiary) 100%);
+  --icon-border-hover: var(--border-hover);
+  --icon-color: var(--accent-color);
 }
 
 
@@ -44,6 +48,10 @@ import ThemeToggle from '@/components/ThemeToggle.vue'
   --shadow-light: rgba(0, 0, 0, 0.3);
   --shadow-dark: rgba(0, 0, 0, 0.5);
   --modal-overlay: rgba(0, 0, 0, 0.7);
+  --icon-bg: var(--accent-color);
+  --icon-hover-bg: var(--accent-hover);
+  --icon-border-hover: var(--accent-hover);
+  --icon-color: #000000; 
 }
 
 body {

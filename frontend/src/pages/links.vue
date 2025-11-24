@@ -197,18 +197,18 @@ function formatDate(s) {
 .search {
   width: 240px;
   padding: 10px 12px;
-  background: #f3f5f7;
-  border: 1px solid #edf0f2;
+  background: var(--bg-tertiary);
+  border: 1px solid var(--border-color);
   border-radius: 8px;
-  color: #2e2e2e;
+  color: var(--text-primary);
 }
 h2 {
   margin: 0;
-  color: #6c8c8c;
+  color: var(--text-muted);
   font-weight: 600;
 }
 .add-btn {
-  background: #6c8c8c;
+  background: var(--accent-color);
   color: #fff;
   border: none;
   border-radius: 8px;
@@ -218,45 +218,45 @@ h2 {
 }
 .add-btn:hover {
   transform: translateY(-1px);
-  box-shadow: 0 6px 14px rgba(75, 121, 161, .25);
-  background: linear-gradient(135deg, #6c8c8c 0%, #6c8c8c 100%);
+  box-shadow: 0 6px 14px var(--shadow-light);
+  background: var(--accent-hover);
 }
 .state { margin: 24px 0;}
-.muted { color: #666; }
-.error { color: #c54747; }
-.empty { margin-top: 40px; color: #6c8c8c; }
+.muted { color: var(--text-secondary); }
+.error { color: var(--error-color); }
+.empty { margin-top: 40px; color: var(--text-muted); }
 
 .empty a {
-  color: #7c81a2;
-  text-decoration: aquamarine;
+  color: var(--accent-color);
+  text-decoration: none;
   transition: color 0.2s ease;
 }
 
 .empty a:hover {
-  color: #5a7a7a; 
+  color: var(--accent-hover); 
   text-decoration: underline;
 }
 
 .table { width: 100%; border-collapse: collapse; }
-.table th, .table td { padding: 10px 12px; border-bottom: 1px solid #edf0f2; text-align: left; }
-.table thead th { font-weight: 600; color: #2e3a44; background: #f8fafb; }
-.table tbody tr:hover { background: #f9fbfd; }
+.table th, .table td { padding: 10px 12px; border-bottom: 1px solid var(--border-color); text-align: left; }
+.table thead th { font-weight: 600; color: var(--text-primary); background: var(--bg-secondary); }
+.table tbody tr:hover { background: var(--bg-secondary); }
 .sortable { cursor: pointer; user-select: none; }
-.sort { margin-left: 6px; color: #6c8c8c; }
-.name { font-weight: 600; color: #2e3a44; max-width: 280px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.sort { margin-left: 6px; color: var(--text-muted); }
+.name { font-weight: 600; color: var(--text-primary); max-width: 280px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .cnt { width: 140px; }
 .url {
   width: 100%;
   padding: 12px 14px;
-  background: #f3f5f7;
-  border: 1px solid #edf0f2;
+  background: var(--bg-tertiary);
+  border: 1px solid var(--border-color);
   border-radius: 8px;
-  color: #2e2e2e;
+  color: var(--text-primary);
   transition: border-color .15s ease, box-shadow .15s ease;
 }
 .table tbody tr:hover .url {
-  border-color: #dfe6eb;
-  box-shadow: inset 0 0 0 1px #e6edf2;
+  border-color: var(--border-hover);
+  box-shadow: inset 0 0 0 1px var(--border-hover);
 }
 .actions { display: flex; gap: 8px; justify-content: flex-end; }
 .url-cell { min-width: 300px; }
@@ -267,33 +267,53 @@ th._w, td._w { width: 140px; }
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  background: #f3f5f7;
-  border: 1px solid #edf0f2;
+  background: var(--icon-bg);
+  border: 1px solid var(--border-color);
   border-radius: 8px;
   cursor: pointer;
   transition: transform .12s ease, background .15s ease, box-shadow .15s ease, border-color .15s ease;
   font-size: 16px; 
+  color: var(--icon-color);
 }
+
 .icon:hover {
   transform: translateY(-1px);
-  background: linear-gradient(135deg, #f7faff 0%, #eef5ff 100%);
-  border-color: #d5e2f3;
-  box-shadow: 0 4px 10px rgba(58,106,149,.15);
+  background: var(--icon-hover-bg);
+  border-color: var(--icon-border-hover);
+  box-shadow: 0 4px 10px var(--shadow-light);
 }
 
 .icon:nth-child(3) {
   font-size: 24px;
 }
+
 .icon.delete {
   font-size: 24px;
 }
+
 .icon.delete:hover {
   background: linear-gradient(135deg, #ffeaea 0%, #ffdbdb 100%);
   border-color: #f3c5c5;
-  box-shadow: 0 4px 10px rgba(149, 58, 58, 0.15);
+  box-shadow: 0 4px 10px rgba(149, 58, 58, 0.25);
+  color: #c54747; 
 }
-.i { display: inline-flex; }
-.i svg { width: 20px; height: 20px; color: #3a6a95; }
+
+:root.dark-theme .icon.delete:hover {
+  background: #c54747;
+  border-color: #c54747;
+  color: white; 
+}
+
+.i { 
+  display: inline-flex; 
+}
+
+.i svg { 
+  width: 20px; 
+  height: 20px; 
+  color: var(--icon-color); 
+}
+
 
 .modal-overlay {
   position: fixed;
@@ -301,7 +321,7 @@ th._w, td._w { width: 140px; }
   left: 0;
   right: 0;
   bottom: 0;
-  background: rgba(44, 44, 44, 0.6);
+  background: var(--modal-overlay);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -309,13 +329,13 @@ th._w, td._w { width: 140px; }
 }
 
 .modal {
-  background: #f8fafb;
+  background: var(--bg-secondary);
   border-radius: 12px;
   padding: 0;
   width: 450px;
   max-width: 90vw;
-  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.25);
-  border: 1px solid #edf0f2;
+  box-shadow: 0 20px 40px var(--shadow-dark);
+  border: 1px solid var(--border-color);
 }
 
 .modal-content {
@@ -324,14 +344,14 @@ th._w, td._w { width: 140px; }
 
 .modal-content h3 {
   margin: 0 0 16px 0;
-  color: #2e3a44;
+  color: var(--text-primary);
   font-weight: 600;
   font-size: 20px;
 }
 
 .modal-content p {
   margin: 0 0 32px 0;
-  color: #666;
+  color: var(--text-secondary);
   line-height: 1.5;
   font-size: 15px;
 }
@@ -354,29 +374,29 @@ th._w, td._w { width: 140px; }
 }
 
 .cancel-btn {
-  background: #f3f5f7;
-  border: 1px solid #edf0f2;
-  color: #2e3a44;
+  background: var(--bg-tertiary);
+  border: 1px solid var(--border-color);
+  color: var(--text-primary);
 }
 
 .cancel-btn:hover {
   transform: translateY(-1px);
-  background: linear-gradient(135deg, #f7faff 0%, #eef5ff 100%);
-  border-color: #d5e2f3;
-  box-shadow: 0 4px 10px rgba(58,106,149,.15);
+  background: linear-gradient(135deg, var(--bg-secondary) 0%, var(--bg-tertiary) 100%);
+  border-color: var(--border-hover);
+  box-shadow: 0 4px 10px var(--shadow-light);
 }
 
 .confirm-delete-btn {
   background: transparent;
-  color: #6c8c8c;
-  border: 1px solid #6c8c8c;
+  color: var(--accent-color);
+  border: 1px solid var(--accent-color);
 }
 
 .confirm-delete-btn:hover {
   transform: translateY(-1px);
-  background: #c54747;
+  background: var(--error-color);
   color: white;
-  border-color: #c54747;
+  border-color: var(--error-color);
   box-shadow: 0 4px 10px rgba(149, 58, 58, 0.25);
 }
 </style>
