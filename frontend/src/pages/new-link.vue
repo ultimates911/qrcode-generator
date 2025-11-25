@@ -61,23 +61,31 @@ async function submit() {
   padding: 0 16px;
   text-align: center;
 }
-.title { margin: 0 0 40px; color: #4b6576; font-weight: 600; }
+.title { 
+  margin: 0 0 40px; 
+  color: var(--text-muted); 
+  font-weight: 600; 
+}
 
 .form { display: grid; justify-items: center; gap: 18px; }
 .input {
   width: min(600px, 100%);
   padding: 12px 14px;
-  border: 1px solid #cddfe8;
+  border: 1px solid var(--border-color);
   border-radius: 8px;
-  background: #ffffff;
+  background: var(--bg-tertiary);
+  color: var(--text-primary);
   outline: none;
   transition: border-color .15s ease, box-shadow .15s ease;
 }
-.input:focus { border-color: #6ea3c4; box-shadow: 0 0 0 3px rgba(85,143,179,.2); }
-.error { color: #c54747; margin: 4px 0 0; }
+.input:focus { 
+  border-color: var(--accent-color); 
+  box-shadow: 0 0 0 3px var(--shadow-light); 
+}
+.error { color: var(--error-color); margin: 4px 0 0; }
 
 .submit {
-  background: #6c8c8c;
+  background: var(--accent-color);
   color: #fff;
   border: none;
   border-radius: 8px;
@@ -85,6 +93,10 @@ async function submit() {
   cursor: pointer;
   transition: transform .12s ease, box-shadow .15s ease, background .2s ease;
 }
-.submit:hover { transform: translateY(-1px); box-shadow: 0 6px 14px rgba(75,121,161,.25); }
+.submit:hover { 
+  transform: translateY(-1px); 
+  box-shadow: 0 6px 14px var(--shadow-light); 
+  background: var(--accent-hover);
+}
 </style>
 

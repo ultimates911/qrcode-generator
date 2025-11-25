@@ -83,23 +83,62 @@ onMounted(fetchData)
 
 <style scoped>
 .analytics { max-width: 980px; margin: 60px auto; padding: 0 16px; }
-.title { margin: 0; color: #2b3b45; font-weight: 600; }
-.subtitle { color: #6a7a86; margin: 8px 0 24px; }
+.title { 
+  margin: 0; 
+  color: var(--text-primary); 
+  font-weight: 600; 
+}
+.subtitle { 
+  color: var(--text-secondary); 
+  margin: 8px 0 24px; 
+}
 .state { margin: 24px 0; }
-.muted { color: #8b98a1; }
-.error { color: #c54747; }
+.muted { color: var(--text-muted); }
+.error { color: var(--error-color); }
 .grid { display: grid; grid-template-columns: 1fr auto; align-items: start; gap: 10px 16px; }
-.label { font-weight: 600; color: #2b3b45; }
-.total { justify-self: end; color: #2b3b45; }
+.label { 
+  font-weight: 600; 
+  color: var(--text-primary); 
+}
+.total { 
+  justify-self: end; 
+  color: var(--text-primary); 
+}
 
 .list { grid-column: 1 / -1; display: grid; gap: 12px; }
-.item { background: #f6f7f9; border: 1px solid #eceff3; border-radius: 10px; padding: 10px; }
+.item { 
+  background: var(--bg-tertiary); 
+  border: 1px solid var(--border-color); 
+  border-radius: 10px; 
+  padding: 10px; 
+}
 .main { display: flex; justify-content: space-between; align-items: center; gap: 12px; }
-.text { font-weight: 600; color: #2b3b45; }
-.ghost { background: #f3f5f7; color: #3a4a56; border: 1px solid #e3e9ee; border-radius: 8px; padding: 8px 12px; cursor: pointer; }
-.ghost:hover { background: #eef2f7; transform: translateY(-1px); }
-.details { margin-top: 10px; padding: 12px; border-left: 4px solid #6b97a7; background: #f2f4f6; border-radius: 8px; color: #1f2a33; }
+.text { 
+  font-weight: 600; 
+  color: var(--text-primary); 
+}
+.ghost { 
+  background: var(--bg-secondary); 
+  color: var(--text-primary); 
+  border: 1px solid var(--border-color); 
+  border-radius: 8px; 
+  padding: 8px 12px; 
+  cursor: pointer; 
+  transition: all 0.2s ease;
+}
+.ghost:hover { 
+  background: var(--bg-tertiary); 
+  transform: translateY(-1px); 
+  box-shadow: 0 2px 8px var(--shadow-light);
+}
+.details { 
+  margin-top: 10px; 
+  padding: 12px; 
+  border-left: 4px solid var(--accent-color); 
+  background: var(--bg-secondary); 
+  border-radius: 8px; 
+  color: var(--text-primary); 
+}
 .ua { word-break: break-all; }
 .dots { text-align: center; }
 </style>
-
