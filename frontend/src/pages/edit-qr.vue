@@ -109,7 +109,7 @@ async function generateQR() {
   qrLoading.value = true
   error.value = null
   try {
-    const redirectUrl = `${window.location.origin}/redirect/${hash.value}`
+    const redirectUrl = `${window.location.protocol}//${window.location.hostname}:8080/redirect/${hash.value}`
     const res = await fetch('/api/v1/qrcode', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
