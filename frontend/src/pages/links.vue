@@ -40,10 +40,63 @@
               <td class="url-cell"><input class="url" :value="it.original_url" readonly /></td>
               <td class="date">{{ formatDate(it.created_at) }}</td>
               <td class="actions">
-                <button class="icon" title="Аналитика" @click="openAnalytics(it)"><span class="i">A</span></button>
-                <button class="icon" title="Просмотр QR" @click="previewQR(it)"><span class="i">QR</span></button>
-                <button type="button" class="icon" title="Настройки QR" @click.stop="editQR(it)"><span class="i">⚙</span></button>
-                <button type="button" class="icon delete" title="Удалить ссылку" @click.stop="showDeleteModal(it)"><span class="i">🗑</span></button>
+                <button class="icon" title="Аналитика" @click="openAnalytics(it)">
+                  <span class="i analytics-icon">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                      <line x1="3" y1="3" x2="3" y2="21"></line> <!-- Ось Y -->
+                      <line x1="3" y1="21" x2="21" y2="21"></line> <!-- Ось X -->
+                      <rect x="6" y="13" width="3" height="8" rx="1"></rect>
+                      <rect x="11" y="8" width="3" height="13" rx="1"></rect>
+                      <rect x="16" y="3" width="3" height="18" rx="1"></rect>
+                    </svg>
+                  </span>
+                </button>
+                <button class="icon" title="Просмотр QR" @click="previewQR(it)">
+                  <span class="i qr-icon">
+
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+               
+                      <path d="M4 4h6v6H4z" stroke-width="2"></path>
+                      <path d="M4 4v6h6" stroke-width="2" fill="none"></path>
+                      
+                      <path d="M14 4h6v6h-6z" stroke-width="2"></path>
+                      <path d="M14 4v6h6" stroke-width="2" fill="none"></path>
+                      
+                      <path d="M4 14h6v6H4z" stroke-width="2"></path>
+                      <path d="M4 14v6h6" stroke-width="2" fill="none"></path>
+                      
+                      <path d="M14 14h6v6h-6z" stroke-width="2"></path>
+                      <path d="M14 14v6h6" stroke-width="2" fill="none"></path>
+                      
+                      <rect x="10" y="10" width="1.5" height="1.5" fill="currentColor"></rect>
+                      <rect x="12" y="12" width="1.5" height="1.5" fill="currentColor"></rect>
+                      <rect x="10" y="12" width="1.5" height="1.5" fill="currentColor"></rect>
+                      <rect x="12" y="10" width="1.5" height="1.5" fill="currentColor"></rect>
+                      
+                      <rect x="18" y="10" width="1" height="1" fill="currentColor"></rect>
+                      <rect x="10" y="18" width="1" height="1" fill="currentColor"></rect>
+                      <rect x="18" y="18" width="1" height="1" fill="currentColor"></rect>
+                    </svg>
+                  </span>
+                </button>
+                <button type="button" class="icon" title="Настройки QR" @click.stop="editQR(it)">
+                  <span class="i settings-icon">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                      <circle cx="12" cy="12" r="3"></circle>
+                      <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
+                    </svg>
+                  </span>
+                </button>
+                <button type="button" class="icon delete" title="Удалить ссылку" @click.stop="showDeleteModal(it)">
+                  <span class="i delete-icon">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                      <polyline points="3 6 5 6 21 6"></polyline>
+                      <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+                      <line x1="10" y1="11" x2="10" y2="17"></line>
+                      <line x1="14" y1="11" x2="14" y2="17"></line>
+                    </svg>
+                  </span>
+                </button>
               </td>
             </tr>
           </tbody>
@@ -283,14 +336,6 @@ th._w, td._w { width: 140px; }
   box-shadow: 0 4px 10px var(--shadow-light);
 }
 
-.icon:nth-child(3) {
-  font-size: 24px;
-}
-
-.icon.delete {
-  font-size: 24px;
-}
-
 .icon.delete:hover {
   background: linear-gradient(135deg, #ffeaea 0%, #ffdbdb 100%);
   border-color: #f3c5c5;
@@ -306,12 +351,40 @@ th._w, td._w { width: 140px; }
 
 .i { 
   display: inline-flex; 
+  align-items: center;
+  justify-content: center;
 }
 
 .i svg { 
   width: 20px; 
   height: 20px; 
   color: var(--icon-color); 
+  transition: color 0.15s ease;
+}
+
+.analytics-icon svg {
+  width: 25px; 
+  height: 25px; 
+}
+
+.qr-icon svg {
+  width: 25px; 
+  height: 25px; 
+  stroke-width: 1%; 
+}
+
+.settings-icon svg {
+  width: 20px;
+  height: 20px;
+}
+
+.delete-icon svg {
+  width: 20px;
+  height: 20px;
+}
+
+.icon:hover .i svg {
+  color: var(--icon-hover-color);
 }
 
 
