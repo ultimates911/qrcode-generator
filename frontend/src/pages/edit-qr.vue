@@ -19,21 +19,80 @@
         <div class="field">
           <label>Цвет</label>
           <div class="swatches">
-            <button v-for="c in fgPalette" :key="c" class="swatch" :style="{ background: '#'+c }" :class="{ active: color===c }" @click="setColor(c)"></button>
+            <button v-for="c in fgPalette" :key="c" 
+                    class="swatch" 
+                    :style="{ background: '#'+c }" 
+                    :class="{ active: color===c }" 
+                    @click="setColor(c)">
+            </button>
+            <!-- Кнопка кастомного цвета -->
+            <button class="swatch custom-color" 
+                    :class="{ active: isCustomColor }"
+                    @click="openColorPicker('color')"
+                    :style="{ background: isCustomColor ? '#' + color : 'var(--bg-tertiary)' }">
+              <span v-if="!isCustomColor">+</span>
+              <span v-else>✓</span>
+            </button>
+          </div>
+          
+          <div v-if="showColorPicker === 'color'" class="color-picker">
+            <input type="color" 
+                   v-model="customColorValue" 
+                   @input="onCustomColorChange('color')" />
+            <div class="color-inputs">
+              <input type="text" 
+                     v-model="customColorHex" 
+                     placeholder="#000000"
+                     @input="onHexInput('color')" />
+              <button class="apply-btn" @click="applyCustomColor('color')">Применить</button>
+              <button class="cancel-btn" @click="closeColorPicker">Отмена</button>
+            </div>
           </div>
         </div>
 
         <div class="field">
           <label>Фон</label>
           <div class="swatches">
-            <button v-for="c in bgPalette" :key="c" class="swatch" :style="{ background: '#'+c }" :class="{ active: background===c }" @click="setBackground(c)"></button>
+            <button v-for="c in bgPalette" :key="c" 
+                    class="swatch" 
+                    :style="{ background: '#'+c }" 
+                    :class="{ active: background===c }" 
+                    @click="setBackground(c)">
+            </button>
+            <button class="swatch custom-color" 
+                    :class="{ active: isCustomBackground }"
+                    @click="openColorPicker('background')"
+                    :style="{ background: isCustomBackground ? '#' + background : 'var(--bg-tertiary)' }">
+              <span v-if="!isCustomBackground">+</span>
+              <span v-else>✓</span>
+            </button>
+          </div>
+          
+          <div v-if="showColorPicker === 'background'" class="color-picker">
+            <input type="color" 
+                   v-model="customColorValue" 
+                   @input="onCustomColorChange('background')" />
+            <div class="color-inputs">
+              <input type="text" 
+                     v-model="customColorHex" 
+                     placeholder="#FFFFFF"
+                     @input="onHexInput('background')" />
+              <button class="apply-btn" @click="applyCustomColor('background')">Применить</button>
+              <button class="cancel-btn" @click="closeColorPicker">Отмена</button>
+            </div>
           </div>
         </div>
 
         <div class="field">
           <label>Уровень сглаживания</label>
           <div class="swatches smoothing">
-            <button v-for="s in smoothingPreset" :key="s" class="pill" :class="{ active: smoothing===s }" @click="setSmoothing(s)">{{ s.toFixed(2) }}</button>
+            <button v-for="s in smoothingPreset" 
+                    :key="s" 
+                    class="pill" 
+                    :class="{ active: smoothing===s }" 
+                    @click="setSmoothing(s)">
+              {{ s.toFixed(2) }}
+            </button>
           </div>
         </div>
 
@@ -41,7 +100,9 @@
 
         <div class="actions">
           <button class="ghost" @click="router.push('/links')">Отмена</button>
-          <button class="primary" :disabled="saving" @click="save">{{ saving ? 'Сохранение...' : 'Сохранить' }}</button>
+          <button class="primary" :disabled="saving" @click="save">
+            {{ saving ? 'Сохранение...' : 'Сохранить' }}
+          </button>
         </div>
       </div>
     </div>
@@ -49,7 +110,7 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, computed } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 
 const route = useRoute()
@@ -64,6 +125,19 @@ const smoothing = ref(0.0)
 
 const fgPalette = ['0EA5E9','2563EB','22C55E','EF4444','F59E0B','C8A696','837DA2','000000']
 const bgPalette = ['FFFFFF','F8FAFC','E2E8F0','F1F5F9','FFF7ED','FDF2F8','ECFDF5','FAFAFA']
+
+const showColorPicker = ref(null)
+const customColorValue = ref('#000000')
+const customColorHex = ref('')
+
+const isCustomColor = computed(() => {
+  return !fgPalette.includes(color.value)
+})
+
+const isCustomBackground = computed(() => {
+  return !bgPalette.includes(background.value)
+})
+
 const smoothingPreset = [0.00, 0.05, 0.10, 0.20, 0.30, 0.40, 0.50]
 
 const error = ref(null)
@@ -81,6 +155,48 @@ function queueGenerate() {
 function setColor(c) { color.value = c; queueGenerate() }
 function setBackground(c) { background.value = c; queueGenerate() }
 function setSmoothing(s) { smoothing.value = s; queueGenerate() }
+
+function openColorPicker(type) {
+  showColorPicker.value = type
+  if (type === 'color') {
+    customColorValue.value = '#' + color.value
+    customColorHex.value = '#' + color.value
+  } else {
+    customColorValue.value = '#' + background.value
+    customColorHex.value = '#' + background.value
+  }
+}
+
+function closeColorPicker() {
+  showColorPicker.value = null
+}
+
+function onCustomColorChange(type) {
+  customColorHex.value = customColorValue.value
+}
+
+function onHexInput(type) {
+  const hex = customColorHex.value.replace('#', '')
+  
+  if (/^[0-9A-Fa-f]{6}$/.test(hex)) {
+    customColorValue.value = '#' + hex
+  }
+}
+
+function applyCustomColor(type) {
+  const hex = customColorHex.value.replace('#', '')
+  
+  if (/^[0-9A-Fa-f]{6}$/.test(hex)) {
+    if (type === 'color') {
+      color.value = hex
+    } else {
+      background.value = hex
+    }
+    queueGenerate()
+  }
+  
+  closeColorPicker()
+}
 
 async function fetchLink() {
   error.value = null
@@ -218,7 +334,7 @@ input:focus {
   box-shadow: 0 0 0 3px var(--shadow-light); 
 }
 
-.swatches { display: grid; grid-template-columns: repeat(6, 36px); gap: 10px; }
+.swatches { display: grid; grid-template-columns: repeat(7, 36px); gap: 10px; }
 .swatch { 
   width: 36px; 
   height: 36px; 
@@ -280,4 +396,88 @@ input:focus {
   box-shadow: 0 4px 10px var(--shadow-light);
 }
 .error { color: var(--error-color); }
+
+.swatch.custom-color {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 18px;
+  font-weight: bold;
+  color: var(--text-secondary);
+  background: var(--bg-tertiary);
+  border: 2px dashed var(--border-color);
+}
+
+.swatch.custom-color:hover {
+  border-color: var(--accent-color);
+  color: var(--accent-color);
+}
+
+.swatch.custom-color.active {
+  border-color: var(--accent-color);
+  border-style: solid;
+  color: var(--accent-color);
+}
+
+.color-picker {
+  margin-top: 12px;
+  padding: 16px;
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-color);
+  border-radius: 12px;
+  box-shadow: 0 8px 20px var(--shadow-dark);
+}
+
+.color-picker input[type="color"] {
+  width: 100%;
+  height: 60px;
+  border: none;
+  border-radius: 8px;
+  margin-bottom: 12px;
+  cursor: pointer;
+}
+
+.color-inputs {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+}
+
+.color-inputs input[type="text"] {
+  flex: 1;
+  padding: 8px 12px;
+  border: 1px solid var(--border-color);
+  border-radius: 6px;
+  background: var(--bg-tertiary);
+  color: var(--text-primary);
+}
+
+.apply-btn, .cancel-btn {
+  padding: 8px 16px;
+  border-radius: 6px;
+  border: 1px solid var(--border-color);
+  cursor: pointer;
+  font-size: 14px;
+  transition: all 0.2s ease;
+}
+
+.apply-btn {
+  background: var(--accent-color);
+  color: white;
+  border-color: var(--accent-color);
+}
+
+.apply-btn:hover {
+  background: var(--accent-hover);
+}
+
+.cancel-btn {
+  background: var(--bg-tertiary);
+  color: var(--text-primary);
+}
+
+.cancel-btn:hover {
+  background: var(--bg-secondary);
+}
+
 </style>
