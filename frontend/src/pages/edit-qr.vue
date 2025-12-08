@@ -22,26 +22,28 @@
             <button v-for="c in fgPalette" :key="c" 
                     class="swatch" 
                     :style="{ background: '#'+c }" 
-                    :class="{ active: color===c }" 
+                    :class="{ active: qrColor===c }" 
                     @click="setColor(c)">
             </button>
-            <!-- Кнопка кастомного цвета -->
             <button class="swatch custom-color" 
-                    :class="{ active: isCustomColor }"
+                    :class="{ active: isCustomFgColor }"
                     @click="openColorPicker('color')"
-                    :style="{ background: isCustomColor ? '#' + color : 'var(--bg-tertiary)' }">
-              <span v-if="!isCustomColor">+</span>
+                    :style="{ 
+                      background: isCustomFgColor ? '#' + qrColor : 'var(--bg-tertiary)',
+                      borderColor: isCustomFgColor ? '#' + qrColor : 'var(--border-color)'
+                    }">
+              <span v-if="!isCustomFgColor">+</span>
               <span v-else>✓</span>
             </button>
           </div>
           
           <div v-if="showColorPicker === 'color'" class="color-picker">
             <input type="color" 
-                   v-model="customColorValue" 
+                   v-model="customFgColorValue" 
                    @input="onCustomColorChange('color')" />
             <div class="color-inputs">
               <input type="text" 
-                     v-model="customColorHex" 
+                     v-model="customFgColorHex" 
                      placeholder="#000000"
                      @input="onHexInput('color')" />
               <button class="apply-btn" @click="applyCustomColor('color')">Применить</button>
@@ -56,25 +58,28 @@
             <button v-for="c in bgPalette" :key="c" 
                     class="swatch" 
                     :style="{ background: '#'+c }" 
-                    :class="{ active: background===c }" 
+                    :class="{ active: qrBackground===c }" 
                     @click="setBackground(c)">
             </button>
             <button class="swatch custom-color" 
-                    :class="{ active: isCustomBackground }"
+                    :class="{ active: isCustomBgColor }"
                     @click="openColorPicker('background')"
-                    :style="{ background: isCustomBackground ? '#' + background : 'var(--bg-tertiary)' }">
-              <span v-if="!isCustomBackground">+</span>
+                    :style="{ 
+                      background: isCustomBgColor ? '#' + qrBackground : 'var(--bg-tertiary)',
+                      borderColor: isCustomBgColor ? '#' + qrBackground : 'var(--border-color)'
+                    }">
+              <span v-if="!isCustomBgColor">+</span>
               <span v-else>✓</span>
             </button>
           </div>
           
           <div v-if="showColorPicker === 'background'" class="color-picker">
             <input type="color" 
-                   v-model="customColorValue" 
+                   v-model="customBgColorValue" 
                    @input="onCustomColorChange('background')" />
             <div class="color-inputs">
               <input type="text" 
-                     v-model="customColorHex" 
+                     v-model="customBgColorHex" 
                      placeholder="#FFFFFF"
                      @input="onHexInput('background')" />
               <button class="apply-btn" @click="applyCustomColor('background')">Применить</button>
@@ -119,23 +124,31 @@ const linkId = Number(route.params.id)
 
 const url = ref('')
 const hash = ref('')
-const color = ref('000000')
-const background = ref('FFFFFF')
+const qrColor = ref('000000')
+const qrBackground = ref('FFFFFF')
 const smoothing = ref(0.0)
 
 const fgPalette = ['0EA5E9','2563EB','22C55E','EF4444','F59E0B','C8A696','837DA2','000000']
 const bgPalette = ['FFFFFF','F8FAFC','E2E8F0','F1F5F9','FFF7ED','FDF2F8','ECFDF5','FAFAFA']
 
 const showColorPicker = ref(null)
-const customColorValue = ref('#000000')
-const customColorHex = ref('')
 
-const isCustomColor = computed(() => {
-  return !fgPalette.includes(color.value)
+// Переменные для палитры цвета
+const customFgColorValue = ref('#000000')
+const customFgColorHex = ref('')
+// Переменные для палитры фона
+const customBgColorValue = ref('#FFFFFF')
+const customBgColorHex = ref('')
+
+const lastCustomFgColor = ref('000000')
+const lastCustomBgColor = ref('FFFFFF')
+
+const isCustomFgColor = computed(() => {
+  return !fgPalette.includes(qrColor.value)
 })
 
-const isCustomBackground = computed(() => {
-  return !bgPalette.includes(background.value)
+const isCustomBgColor = computed(() => {
+  return !bgPalette.includes(qrBackground.value)
 })
 
 const smoothingPreset = [0.00, 0.05, 0.10, 0.20, 0.30, 0.40, 0.50]
@@ -152,18 +165,48 @@ function queueGenerate() {
   pendingTimer = setTimeout(generateQR, 250)
 }
 
-function setColor(c) { color.value = c; queueGenerate() }
-function setBackground(c) { background.value = c; queueGenerate() }
+function setColor(c) { 
+  qrColor.value = c
+  queueGenerate() 
+}
+
+function setBackground(c) { 
+  qrBackground.value = c
+  queueGenerate() 
+}
+
 function setSmoothing(s) { smoothing.value = s; queueGenerate() }
 
 function openColorPicker(type) {
+  console.log('Opening color picker for:', type) // Для отладки
   showColorPicker.value = type
+  
   if (type === 'color') {
-    customColorValue.value = '#' + color.value
-    customColorHex.value = '#' + color.value
+    console.log('Current qrColor:', qrColor.value)
+    console.log('isCustomFgColor:', isCustomFgColor.value)
+    console.log('lastCustomFgColor:', lastCustomFgColor.value)
+    
+    if (isCustomFgColor.value) {
+      customFgColorValue.value = '#' + qrColor.value
+      customFgColorHex.value = '#' + qrColor.value
+    } else {
+      customFgColorValue.value = '#' + lastCustomFgColor.value
+      customFgColorHex.value = '#' + lastCustomFgColor.value
+    }
+    console.log('Set customFgColorValue to:', customFgColorValue.value)
   } else {
-    customColorValue.value = '#' + background.value
-    customColorHex.value = '#' + background.value
+    console.log('Current qrBackground:', qrBackground.value)
+    console.log('isCustomBgColor:', isCustomBgColor.value)
+    console.log('lastCustomBgColor:', lastCustomBgColor.value)
+    
+    if (isCustomBgColor.value) {
+      customBgColorValue.value = '#' + qrBackground.value
+      customBgColorHex.value = '#' + qrBackground.value
+    } else {
+      customBgColorValue.value = '#' + lastCustomBgColor.value
+      customBgColorHex.value = '#' + lastCustomBgColor.value
+    }
+    console.log('Set customBgColorValue to:', customBgColorValue.value)
   }
 }
 
@@ -172,27 +215,59 @@ function closeColorPicker() {
 }
 
 function onCustomColorChange(type) {
-  customColorHex.value = customColorValue.value
+  console.log('onCustomColorChange:', type)
+  if (type === 'color') {
+    customFgColorHex.value = customFgColorValue.value
+    console.log('Updated customFgColorHex:', customFgColorHex.value)
+  } else {
+    customBgColorHex.value = customBgColorValue.value
+    console.log('Updated customBgColorHex:', customBgColorHex.value)
+  }
 }
 
 function onHexInput(type) {
-  const hex = customColorHex.value.replace('#', '')
-  
-  if (/^[0-9A-Fa-f]{6}$/.test(hex)) {
-    customColorValue.value = '#' + hex
+  console.log('onHexInput:', type)
+  if (type === 'color') {
+    const hex = customFgColorHex.value.replace('#', '')
+    console.log('Parsed hex:', hex)
+    if (/^[0-9A-Fa-f]{6}$/.test(hex)) {
+      customFgColorValue.value = '#' + hex
+      console.log('Updated customFgColorValue:', customFgColorValue.value)
+    }
+  } else {
+    const hex = customBgColorHex.value.replace('#', '')
+    console.log('Parsed hex:', hex)
+    if (/^[0-9A-Fa-f]{6}$/.test(hex)) {
+      customBgColorValue.value = '#' + hex
+      console.log('Updated customBgColorValue:', customBgColorValue.value)
+    }
   }
 }
 
 function applyCustomColor(type) {
-  const hex = customColorHex.value.replace('#', '')
-  
-  if (/^[0-9A-Fa-f]{6}$/.test(hex)) {
-    if (type === 'color') {
-      color.value = hex
+  console.log('applyCustomColor:', type)
+  if (type === 'color') {
+    const hex = customFgColorHex.value.replace('#', '')
+    console.log('Applying color hex:', hex)
+    if (/^[0-9A-Fa-f]{6}$/.test(hex)) {
+      qrColor.value = hex
+      lastCustomFgColor.value = hex
+      console.log('Updated qrColor to:', qrColor.value)
+      queueGenerate()
     } else {
-      background.value = hex
+      console.error('Invalid hex for color:', hex)
     }
-    queueGenerate()
+  } else {
+    const hex = customBgColorHex.value.replace('#', '')
+    console.log('Applying background hex:', hex)
+    if (/^[0-9A-Fa-f]{6}$/.test(hex)) {
+      qrBackground.value = hex
+      lastCustomBgColor.value = hex
+      console.log('Updated qrBackground to:', qrBackground.value)
+      queueGenerate()
+    } else {
+      console.error('Invalid hex for background:', hex)
+    }
   }
   
   closeColorPicker()
@@ -209,14 +284,33 @@ async function fetchLink() {
       throw new Error(msg)
     }
     const data = await res.json()
+    console.log('Fetched link data:', data)
     url.value = data.original_url
     hash.value = data.hash || ''
-    color.value = data.color || color.value
-    background.value = data.background || background.value
+    
+    if (data.color) {
+      qrColor.value = data.color
+      console.log('Set qrColor from DB:', data.color)
+      if (!fgPalette.includes(data.color)) {
+        lastCustomFgColor.value = data.color
+        console.log('Saved as lastCustomFgColor:', data.color)
+      }
+    }
+    
+    if (data.background) {
+      qrBackground.value = data.background
+      console.log('Set qrBackground from DB:', data.background)
+      if (!bgPalette.includes(data.background)) {
+        lastCustomBgColor.value = data.background
+        console.log('Saved as lastCustomBgColor:', data.background)
+      }
+    }
+    
     smoothing.value = typeof data.smoothing === 'number' ? data.smoothing : 0.0
     await generateQR()
   } catch (e) {
     error.value = e.message || 'Ошибка'
+    console.error('Error fetching link:', e)
   }
 }
 
@@ -226,11 +320,20 @@ async function generateQR() {
   error.value = null
   try {
     const redirectUrl = `${window.location.protocol}//${window.location.hostname}:8080/redirect/${hash.value}`
+    console.log('Generating QR with:', { 
+      color: qrColor.value, 
+      background: qrBackground.value 
+    })
     const res = await fetch('/api/v1/qrcode', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       credentials: 'include',
-      body: JSON.stringify({ url: redirectUrl, color: color.value, background: background.value, smoothing: smoothing.value })
+      body: JSON.stringify({ 
+        url: redirectUrl, 
+        color: qrColor.value,
+        background: qrBackground.value,
+        smoothing: smoothing.value 
+      })
     })
     if (!res.ok) {
       if (res.status === 401) { router.push('/login'); return }
@@ -242,6 +345,7 @@ async function generateQR() {
     qrSrc.value = lastObjectUrl
   } catch (e) {
     error.value = e.message || 'Ошибка'
+    console.error('Error generating QR:', e)
   } finally {
     qrLoading.value = false
   }
@@ -255,7 +359,12 @@ async function save() {
       method: 'PATCH',
       headers: { 'Content-Type': 'application/json' },
       credentials: 'include',
-      body: JSON.stringify({ original_url: url.value, color: color.value, background: background.value, smoothing: smoothing.value })
+      body: JSON.stringify({ 
+        original_url: url.value, 
+        color: qrColor.value,
+        background: qrBackground.value,
+        smoothing: smoothing.value 
+      })
     })
     if (!res.ok) {
       if (res.status === 401) { router.push('/login'); return }
@@ -266,6 +375,7 @@ async function save() {
     router.push('/links')
   } catch (e) {
     error.value = e.message || 'Ошибка'
+    console.error('Error saving:', e)
   } finally {
     saving.value = false
   }
@@ -431,10 +541,11 @@ input:focus {
 .color-picker input[type="color"] {
   width: 100%;
   height: 60px;
-  border: none;
+  border: 1px solid var(--border-color);
   border-radius: 8px;
   margin-bottom: 12px;
   cursor: pointer;
+  background: var(--bg-tertiary);
 }
 
 .color-inputs {
@@ -479,5 +590,4 @@ input:focus {
 .cancel-btn:hover {
   background: var(--bg-secondary);
 }
-
 </style>
