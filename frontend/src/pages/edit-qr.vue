@@ -133,10 +133,8 @@ const bgPalette = ['FFFFFF','F8FAFC','E2E8F0','F1F5F9','FFF7ED','FDF2F8','ECFDF5
 
 const showColorPicker = ref(null)
 
-// Переменные для палитры цвета
 const customFgColorValue = ref('#000000')
 const customFgColorHex = ref('')
-// Переменные для палитры фона
 const customBgColorValue = ref('#FFFFFF')
 const customBgColorHex = ref('')
 
